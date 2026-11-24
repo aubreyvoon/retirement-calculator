@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en-MY">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retirement Calculator Malaysia</title>
+<meta name="description" content="Check if your EPF and savings will last through retirement in Malaysia. Results update as you type; save a PDF or copy a summary for WhatsApp.">
+<meta property="og:title" content="Retirement Calculator Malaysia">
+<meta property="og:description" content="Check if your EPF and savings will last through retirement in Malaysia.">
+<meta name="theme-color" content="#e9eaec">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23111214'/%3E%3Crect x='7' y='17' width='4' height='8' fill='%23fff'/%3E%3Crect x='14' y='11' width='4' height='14' fill='%23fff'/%3E%3Crect x='21' y='14' width='4' height='11' fill='%23ff4f00'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" defer></script>
+<style>
+/* VOICE work: a money tool an adviser can open in front of a client
+   IDEA a precision instrument: one long age scale, readout above it, controls below
+   PICTURE the lifeline: a column per age, money put in plus returns while working, savings running down after retirement, fund needed as a dashed line
+   COLOUR aluminium first screen, black ink, orange pointer for retirement years; yellow input boxes as the user asked; night #141517
+   TYPE Geist 700 + Geist
+   LAYOUT laptop: title left and the three ages right, finding, figure row, full-width chart, input panels in three columns; phone: stacked, slim result bar while scrolling */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#141517);--alu:light-dark(#e9eaec,#1c1e21);--ink:light-dark(#111214,#eceef0);--mute:light-dark(#54585e,#a4a8ae);--line:light-dark(#c6c9ce,#383c42);--panel:light-dark(#f5f6f7,#191b1e);--grey:light-dark(#9ba1a9,#6b7179);--org:light-dark(#ff4f00,#ff6a26);--orgt:light-dark(#b23400,#ff8c55);--yel:light-dark(#fff1a1,#38320f);--yelb:light-dark(#d4b62e,#8a7a22)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip;padding-bottom:64px}
+.band{padding-block:clamp(24px,4vw,52px);padding-left:max(5vw,16px,env(safe-area-inset-left,0px));padding-right:max(5vw,16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--alu)}
+.head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:20px 48px;align-items:end}
+h1{font-size:clamp(30px,4.2vw,44px);line-height:1.05;letter-spacing:-.02em;margin:0;font-weight:700;text-wrap:balance}
+.sub{color:var(--mute);margin:10px 0 0;max-width:56ch;font-size:15px}
+.ages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}
+.age .l{display:block;font-size:14px;font-weight:500;margin-bottom:4px}
+.stp{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;background:var(--yel);border:1.5px solid var(--yelb);border-radius:10px;overflow:hidden}
+.stp input{font:600 28px/1 Geist,system-ui,sans-serif;text-align:center;border:0;background:transparent;color:var(--ink);width:100%;height:56px;outline:none;font-variant-numeric:tabular-nums}
+.stp button{border:0;background:transparent;color:var(--ink);font:500 24px/1 Geist,system-ui,sans-serif;cursor:pointer;min-height:44px}
+.stp button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.stp:focus-within{outline:2px solid var(--org);outline-offset:1px}
+.yrs{grid-column:1/-1;font-size:14px;color:var(--mute);margin:0}
+h2.find{font-size:clamp(22px,2.8vw,32px);line-height:1.15;letter-spacing:-.015em;font-weight:600;margin:28px 0 16px;max-width:30ch;text-wrap:balance}
+h2.find.err{color:var(--orgt)}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--ink)}
+.fg{padding:12px 16px 4px 0}
+.fg+.fg{padding-left:16px;border-left:1px solid var(--line)}
+.fg .k{font-size:14px;color:var(--mute)}
+.fg .v{font-size:clamp(24px,3vw,36px);font-weight:600;letter-spacing:-.02em;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fg .s{font-size:14px;color:var(--mute)}
+.chip{display:inline-block;font-size:13px;font-weight:600;padding:1px 8px;border-radius:99px;margin-right:6px;white-space:nowrap}
+.chip.ok{background:var(--ink);color:var(--bg)}
+.chip.close{background:color-mix(in srgb,var(--org) 22%,transparent);color:var(--orgt)}
+.chip.short{background:var(--org);color:#111214}
+.chart{margin-top:24px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:2px;vertical-align:-2px;margin-right:6px}
+.legend .dash{height:0;border-top:2px dashed var(--ink);border-radius:0;vertical-align:4px}
+.hov{font-size:14px;color:var(--mute);min-height:44px;margin:6px 0 0;max-width:80ch}
+.fig{position:relative;min-height:360px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y;cursor:crosshair}
+svg text{paint-order:stroke;stroke:var(--alu);stroke-width:4px;stroke-linejoin:round;font-family:Geist,system-ui,sans-serif}
+.ax{fill:var(--mute);font-size:13px}
+.lb{fill:var(--ink);font-size:13px;font-weight:600}
+.lb.or,.gt{fill:var(--orgt)}
+.gt{font-size:13px}
+.gr{stroke:var(--line);stroke-width:1}
+.base{stroke:var(--ink);stroke-width:1.5}
+.cp{fill:var(--ink)}
+.cr{fill:var(--grey)}
+.co{fill:var(--org)}
+.nd{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:6 4}
+.rl{stroke:var(--ink);stroke-width:1}
+.gp{stroke:var(--org);stroke-width:4}
+.dot{fill:var(--org);stroke:var(--alu);stroke-width:2}
+.gone{fill:var(--org);opacity:.09}
+.hl{fill:var(--ink);opacity:.08}
+.ways{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.ways h3{font-size:16px;margin:0 0 8px;font-weight:600}
+.wg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px}
+.wg b{display:block;font-size:22px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.wg span{font-size:14px;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 6px}
+.panel h2{font-size:18px;margin:0 0 14px;font-weight:600}
+.f{display:grid;gap:4px;margin-bottom:14px}
+.f .l{font-size:15px;font-weight:500}
+.h{font-size:13px;color:var(--mute);margin:0}
+.amt{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.amt:empty{display:none}
+.in:has(input:disabled){opacity:.55}
+input:disabled{cursor:not-allowed}
+.epft{font-size:15px;font-weight:600;border-top:1px solid var(--line);padding:10px 0 12px;margin:0}
+.in{display:flex;align-items:center;gap:6px;background:var(--yel);border:1.5px solid var(--yelb);border-radius:8px;height:44px;padding:0 10px}
+.in b{font-weight:500;color:var(--mute);font-size:15px}
+.in input{flex:1;border:0;background:transparent;font:500 16px Geist,system-ui,sans-serif;color:var(--ink);height:100%;outline:none;width:100%;font-variant-numeric:tabular-nums}
+.in:focus-within{outline:2px solid var(--org);outline-offset:1px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{min-height:44px;padding:0 18px;border-radius:8px;border:1.5px solid var(--yelb);background:var(--yel);color:var(--ink);font:500 15px Geist,system-ui,sans-serif;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input[type=radio]:focus-visible{outline:2px solid var(--org);outline-offset:2px}
+.pr{display:grid;grid-template-columns:22px minmax(0,1fr) 104px;align-items:center;gap:10px;min-height:52px;border-bottom:1px solid var(--line);cursor:pointer}
+.pr input[type=radio]{width:20px;height:20px;margin:0;accent-color:var(--org)}
+.pr.on .nm{font-weight:600}
+.pr .in{height:40px}
+.use{font-size:14px;font-weight:600;margin:10px 0 6px}
+.out{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 40px;margin-top:32px}
+.out h2{font-size:20px;margin:0 0 10px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.msg{min-height:22px;margin:8px 0 0}
+textarea{width:100%;font:14px/1.5 Geist,system-ui,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.btn{min-height:44px;padding:0 18px;border-radius:8px;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);font:600 15px Geist,system-ui,sans-serif;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink)}
+.msg{font-size:14px;color:var(--mute)}
+.src{padding-left:18px;margin:0;font-size:14px}
+.src li{margin-bottom:6px}
+a{color:var(--ink);text-underline-offset:2px}
+details{margin-top:28px;border-top:1px solid var(--line);padding-top:6px}
+summary{min-height:44px;display:flex;align-items:center;font-weight:600;cursor:pointer}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;white-space:normal;vertical-align:bottom;min-width:7em}
+th:first-child,td:first-child{text-align:left;min-width:3em}
+tr.r td{background:var(--yel);font-weight:600}
+.foot{font-size:13px;color:var(--mute);margin-top:24px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--ink);color:var(--bg);display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:center;align-items:center;font-size:15px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));transform:translateY(110%);transition:transform .2s ease}
+.bar.show{transform:none}
+.bar b{font-weight:700}
+@media(prefers-reduced-motion:reduce){.bar{transition:none}}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.head{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){.figs{grid-template-columns:repeat(2,minmax(0,1fr))}.fg:nth-child(3){border-left:0;padding-left:0}.fg:nth-child(n+3){border-top:1px solid var(--line)}}
+@media(max-width:640px){.grid,.out,.two{grid-template-columns:minmax(0,1fr)}.wg{grid-template-columns:minmax(0,1fr)}.fig{min-height:300px}}
+@media(max-width:600px){.stp{grid-template-columns:1fr 1fr}.stp input{grid-column:1/-1;grid-row:1;height:48px;font-size:26px}.stp button{grid-row:2;border-top:1px solid var(--yelb);min-height:40px}.fg .v{font-size:24px}.wg b{font-size:20px}}
+</style>
+</head>
+<body>
+<header class="band top">
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>Retirement Calculator Malaysia</h1>
+      <p class="sub">All amounts in RM. Fill in the yellow boxes with your own or your client's figures; results and the lifeline update as you type. Rates for returns, inflation and EPF are already filled in, and you can change them.</p>
+    </div>
+    <div class="ages">
+      <div class="age"><label class="l" for="age">Current age</label><div class="stp"><button type="button" data-step="age:-1" aria-label="Current age down">−</button><input id="age" data-k="age" type="number" inputmode="numeric"><button type="button" data-step="age:1" aria-label="Current age up">+</button></div></div>
+      <div class="age"><label class="l" for="ret">Retire at</label><div class="stp"><button type="button" data-step="ret:-1" aria-label="Retirement age down">−</button><input id="ret" data-k="ret" type="number" inputmode="numeric"><button type="button" data-step="ret:1" aria-label="Retirement age up">+</button></div></div>
+      <div class="age"><label class="l" for="life">Lifespan</label><div class="stp"><button type="button" data-step="life:-1" aria-label="Lifespan down">−</button><input id="life" data-k="life" type="number" inputmode="numeric"><button type="button" data-step="life:1" aria-label="Lifespan up">+</button></div></div>
+      <p class="yrs" id="yrs"></p>
+    </div>
+  </div>
+  <h2 class="find" id="find"></h2>
+  <div class="figs" id="figs">
+    <div class="fg"><div class="k" id="k1">Savings at retirement</div><div class="v" id="v1"></div><div class="s" id="s1"></div></div>
+    <div class="fg"><div class="k" id="k2">Fund needed</div><div class="v" id="v2"></div><div class="s" id="s2"></div></div>
+    <div class="fg"><div class="k">Funded</div><div class="v" id="v3"></div><div class="s" id="s3"></div></div>
+    <div class="fg"><div class="k">Money lasts until</div><div class="v" id="v4"></div><div class="s" id="s4"></div></div>
+  </div>
+  <div class="chart">
+    <div class="legend"><span><i style="background:var(--ink)"></i>Money you put in</span><span><i style="background:var(--grey)"></i>Returns earned</span><span><i style="background:var(--org)"></i>Savings after you retire</span><span><i class="dash"></i>Fund needed to retire at that age</span></div>
+    <p class="hov" id="hov" aria-live="polite"></p>
+    <div class="fig"><svg id="chart" role="img" aria-label="Lifeline chart of savings by age"></svg></div>
+  </div>
+  <div class="ways"><h3 id="wh"></h3><div class="wg" id="wg"></div></div>
+</div>
+</header>
+
+<main class="band">
+<div class="wrap">
+  <div class="grid" id="panels"></div>
+  <div class="out">
+    <section>
+      <h2>Send to your client</h2>
+      <div class="two">
+        <label class="f" for="cName"><span class="l">Prepared for</span><span class="in"><input id="cName" data-k="cName" type="text" autocomplete="off" placeholder="Client's name"></span></label>
+        <label class="f" for="aName"><span class="l">Prepared by</span><span class="in"><input id="aName" data-k="aName" type="text" autocomplete="off" placeholder="Your name and phone"></span></label>
+      </div>
+      <p class="h" style="margin:-6px 0 12px">Both names go on the PDF and the WhatsApp text. Use English letters for the PDF.</p>
+      <textarea id="sum" rows="12" readonly aria-label="Summary text"></textarea>
+      <div class="btns"><button type="button" class="btn" id="copy">Copy for WhatsApp</button><button type="button" class="btn" id="pdf">Save as PDF</button><button type="button" class="btn ghost" id="reset">Clear all</button><button type="button" class="btn ghost" id="undo" hidden>Undo clear</button></div>
+      <p class="msg" id="cmsg" aria-live="polite"></p>
+    </section>
+    <section>
+      <h2>Figures behind it</h2>
+      <ul class="src">
+        <li>EPF: employee 11%; employer 13% on wages up to RM5,000 a month, 12% above. <a href="https://www.malaysia.gov.my/en/personas/young-workers/hak-dan-manfaat-pekerja/epf-contribution-as-employees-rights">Malaysia.gov.my</a></li>
+        <li>The full EPF contribution is counted. Since May 2024 it is split 75% Akaun Persaraan, 15% Sejahtera, 10% Fleksibel, and withdrawals from Sejahtera or Fleksibel before retirement will lower the result. <a href="https://ringgitplus.com/en/guides/how-your-epf-savings-work/">RinggitPlus</a></li>
+        <li>EPF dividend 6.15% for 2025 and 6.3% for 2024; 5.5% is used as a long-run assumption. <a href="https://ringgitplus.com/en/blog/personal-finance-news/epf-declares-6-15-dividend-for-2025.html">RinggitPlus</a></li>
+        <li>ASB paid 5.75 sen a unit for FY2025. <a href="https://ringgitplus.com/en/blog/personal-finance-news/asb-fy2025-distribution-what-the-5-75-sen-payout-means-for-unitholders.html">RinggitPlus</a></li>
+        <li>12-month fixed deposits pay about 2.05% to 2.80% a year. <a href="https://ringgitplus.com/en/fixed-deposit/12-month">RinggitPlus</a></li>
+        <li>Bank Negara expects inflation of 1.5% to 2.5% in 2026; October 2026 was 1.9%. <a href="https://www.thestar.com.my/business/business-news/2026/03/31/headline-inflation-to-stay-moderate-at-15--25-in-2026---bank-negara">The Star</a>, <a href="https://www.malaymail.com/news/money/2026/11/19/inflation-stays-on-a-tight-leash-as-banks-stick-with-19pc-forecast-for-2026/243948">Malay Mail</a></li>
+        <li>Belanjawanku 2024/25: about RM2,690 a month for a single senior, RM3,390 for a couple. <a href="https://www.thestar.com.my/lifestyle/family/2025/03/13/are-my-retirement-savings-enough">The Star</a></li>
+        <li>Unit trust, PRS and stock returns are assumptions, not published figures.</li>
+        <li>Not included: EPF after age 60, tax, medical costs rising faster than inflation, bonuses, one-off needs such as a home loan, education or Hajj, market falls, and early EPF withdrawals.</li>
+      </ul>
+    </section>
+  </div>
+  <details>
+    <summary>Year-by-year lifeline table</summary>
+    <div class="scroll"><table><thead><tr><th>Age</th><th>Salary a month</th><th>Added to EPF</th><th>Extra invested</th><th>Savings if you keep working</th><th>Fund needed to retire at this age</th><th>Savings after you retire</th><th>Spending a month</th></tr></thead><tbody id="tb"></tbody></table></div>
+  </details>
+  <p class="foot">Estimates only, not financial advice. Published figures checked 24 November 2026. Contributions are added mid-year; after retirement, spending is paid at the start of each month and rises with inflation.</p>
+</div>
+</main>
+<div class="bar" id="bar" aria-hidden="true"><b id="b1"></b><span id="b2"></span></div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const D={cName:'',aName:'',age:'',ret:'',life:'',sal:0,emp:'Yes',epf0:0,oth0:0,inv:0,sMode:'Percent',sPct:3,sAmt:0,iMode:'Percent',iPct:3,iAmt:0,spend:0,inc:0,infl:3,div:5.5,plat:'ut',custom:6,rAfter:4,ee:11,er1:13,rfd:2.5,rasb:5.75,rut:5,rprs:5,rstk:7};
+const PL=[['fd','Fixed deposit','rfd'],['asb','ASB','rasb'],['ut','Unit trust (balanced)','rut'],['prs','PRS (moderate)','rprs'],['stk','Stocks / equity funds','rstk'],['custom','Custom','custom']];
+const P=[
+ ['Your money today',[['sal','Monthly salary today','rm','Gross monthly wage that EPF is based on'],['emp','Employer pays EPF for you?','seg:Yes,No','Choose No if self-employed; both EPF rates then become 0%'],['epf0','EPF savings today','rm','Total balance in your KWSP i-Akaun'],['oth0','Other savings and investments today','rm','ASB, PRS, FD, unit trusts, shares'],['inv','Extra investing each month','rm','On top of EPF, into the platform you pick']]],
+ ['Yearly increments',[['sMode','Salary rises each year by','seg:Percent,Amount'],['sPct','Salary increase per year','pc','',['sMode','Percent']],['sAmt','RM added to monthly salary each year','rm','',['sMode','Amount']],['iMode','Extra investing rises each year by','seg:Percent,Amount'],['iPct','Investing increase per year','pc','',['iMode','Percent']],['iAmt','RM added to monthly investing each year','rm','',['iMode','Amount']]]],
+ ['Where you invest other savings','PLAT'],
+ ['Retirement lifestyle',[['spend',"Monthly spending in retirement (today's RM)",'rm','Belanjawanku 2024/25 guide: RM2,690 single, RM3,390 couple'],['inc',"Other monthly income in retirement (today's RM)",'rm','Rental, part-time work, spouse, pension']]],
+ ['Malaysia assumptions',[['infl','Inflation in Malaysia per year','pc','BNM expects 1.5% to 2.5% for 2026; 3% is prudent'],['div','EPF dividend per year','pc','Actual: 6.15% for 2025, 6.3% for 2024'],['rAfter','Return after you stop working','pc','A lower-risk mix once you stop adding money']]],
+ ['EPF rules',[['ee','Your EPF rate','pc','Statutory 11%'],['er1','Employer EPF rate','pc','Statutory 13% up to RM5,000 a month, 12% above']]]
+];
+const fld=([k,l,t,h,sh])=>{
+  const show=sh?` data-show="${sh[0]}:${sh[1]}"`:'',hh=h?`<span class="h">${h}</span>`:'';
+  if(t.startsWith('seg:'))return `<div class="f"${show}><span class="l" id="l-${k}">${l}</span><div class="seg" role="group" aria-labelledby="l-${k}">${t.slice(4).split(',').map(v=>`<button type="button" data-k="${k}" data-v="${v}">${v}</button>`).join('')}</div>${hh}</div>`;
+  return `<label class="f"${show} for="${k}"><span class="l">${l}</span><span class="in">${t==='rm'?'<b>RM</b>':''}<input id="${k}" data-k="${k}" type="number" inputmode="decimal" step="any">${t==='pc'?'<b>%</b>':''}</span>${k==='ee'||k==='er1'?`<span class="amt" id="a-${k}" aria-live="polite"></span>`:''}${hh}</label>`;
+};
+const plat=()=>`<div role="radiogroup" aria-label="Platform">${PL.map(([v,n,k])=>`<label class="pr" data-p="${v}"><input type="radio" name="plat" value="${v}" data-k="plat"><span class="nm">${n}</span><span class="in"><input id="${k}" data-k="${k}" type="number" inputmode="decimal" step="any" aria-label="${n} return per year"><b>%</b></span></label>`).join('')}</div><p class="use" id="use"></p><p class="h" style="margin-bottom:14px">ASB uses its FY2025 payout. Fixed deposit sits inside today's 12-month range. The other returns are assumptions; change any of them.</p>`;
+$('#panels').innerHTML=P.map(([t,f])=>`<section class="panel"><h2>${t}</h2>${f==='PLAT'?plat():f.map(fld).join('')}${t==='EPF rules'?'<p class="epft" id="epft" aria-live="polite"></p>':''}</section>`).join('');
+
+let S={...D},RES=null,HOV=null,G=null,PREV=null;
+const num=k=>{const v=S[k];return v===''||v==null||isNaN(+v)?0:+v;};
+const rm=v=>(v<0?'-':'')+'RM'+Math.round(Math.abs(v)).toLocaleString('en-MY');
+const short=v=>v>=1e6?'RM'+(v/1e6).toFixed(v>=1e7?0:1).replace(/\.0$/,'')+'m':v>=1e3?'RM'+Math.round(v/1e3)+'k':'RM'+Math.round(v);
+const eeR=()=>S.emp==='Yes'?num('ee'):0,erR=()=>S.emp==='Yes'?num('er1'):0;
+const pc=v=>(+v).toLocaleString('en-MY',{maximumFractionDigits:2})+'%';
+const nice=x=>{const p=10**Math.floor(Math.log10(x)),f=x/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;};
+const save=()=>{try{localStorage.setItem('rcm-app-v2',JSON.stringify(S));}catch(e){}};
+
+function check(){
+  const a=S.age,r=S.ret,l=S.life;
+  if([a,r,l].some(v=>v===''||v==null||isNaN(+v)))return 'Start with your current age, when you plan to retire and your expected lifespan.';
+  if(+a<16||+a>80)return 'Current age should be between 16 and 80.';
+  if(+r<=+a)return 'Your retirement age must be higher than your current age.';
+  if(+l<=+r)return 'Expected lifespan must be higher than your retirement age.';
+  if(+l>110)return 'Expected lifespan should be 110 or less.';
+  return '';
+}
+
+function calc(){
+  const a0=Math.round(S.age),R=Math.round(S.ret),L=Math.round(S.life),N=R-a0,p=v=>v/100;
+  const pl=PL.find(x=>x[0]===S.plat)||PL[2],r=p(num(pl[2])),dv=p(num('div')),inf=p(num('infl')),ra=p(num('rAfter'));
+  const rows=[];let epf=num('epf0'),oth=num('oth0'),put=epf+oth;
+  for(let n=0;n<=L-a0;n++){
+    const sal=S.sMode==='Percent'?num('sal')*(1+p(num('sPct')))**n:num('sal')+num('sAmt')*n;
+    const c=sal*12*(p(eeR())+p(erR()));
+    const x=12*(S.iMode==='Percent'?num('inv')*(1+p(num('iPct')))**n:num('inv')+num('iAmt')*n);
+    rows.push({age:a0+n,sal,c,x,tot:epf+oth,put});
+    epf=epf*(1+dv)+c*(1+dv)**0.5;oth=oth*(1+r)+x*(1+r)**0.5;put+=c+x;
+  }
+  const pn=Math.max(num('spend')-num('inc'),0),rmo=(1+ra)**(1/12)-1;
+  const AF=rmo===0?12:(1-(1+rmo)**-12)/rmo*(1+rmo),FV=rmo===0?12:((1+rmo)**12-1)/rmo*(1+rmo);
+  const g=(1+inf)/(1+ra),gs=m=>Math.abs(g-1)<1e-6?m:(1-g**m)/(1-g);
+  rows.forEach((w,i)=>{
+    w.need=w.age>=L?0:pn*(1+inf)**(w.age-a0)*AF*gs(L-w.age);
+    w.spendM=w.age>=R&&w.age<L?pn*(1+inf)**(w.age-a0):null;
+    w.bal=w.age<R?null:w.age===R?w.tot:Math.max(0,rows[i-1].bal*(1+rmo)**12-rows[i-1].spendM*FV);
+  });
+  const at=rows[N],total=at.tot,fund=at.need,gap=total-fund,funded=fund===0?1:total/fund;
+  const z=rows.find(w=>w.age>R&&w.bal===0),lasts=gap>=0?null:(z?z.age-1:L);
+  const e=rows.find(w=>w.age<L&&w.tot>=w.need),earliest=e?e.age:null;
+  const extra=gap>=0||N<=0?0:-gap/(12*(1+r)**0.5*(r===0?N:((1+r)**N-1)/r));
+  const afford=total/(AF*gs(L-R))/(1+inf)**N+num('inc');
+  const status=funded>=1?'On track':funded>=.75?'Close: small gap':'Shortfall';
+  return {rows,a0,R,L,N,pl,r:num(pl[2]),total,put:at.put,fund,gap,funded,lasts,earliest,extra,afford,status,needM:pn*(1+inf)**N};
+}
+
+function render(err){
+  const F=$('#find');F.classList.toggle('err',!!err&&!err.startsWith('Start'));
+  if(err){F.textContent=err;['v1','v2','v3','v4'].forEach(i=>$('#'+i).textContent='–');['s1','s2','s3','s4','yrs','wh'].forEach(i=>$('#'+i).textContent='');$('#wg').innerHTML='';$('#tb').innerHTML='';$('#sum').value='';$('#use').textContent='';return;}
+  const X=RES,{R,L,N}=X,ret=X.total-Math.min(X.put,X.total),pct=Math.round(X.funded*100)+'%';
+  $('#yrs').textContent=`${N} years to retirement, then ${L-R} years in retirement.`;
+  $('#use').textContent=`Using ${pc(X.r)} a year on ${X.pl[1]}.`;
+  $('#tb').innerHTML=X.rows.map(w=>`<tr${w.age===R?' class="r"':''}><td>${w.age}</td><td>${w.age<R?rm(w.sal):''}</td><td>${w.age<R?rm(w.c):''}</td><td>${w.age<R?rm(w.x):''}</td><td>${rm(w.tot)}</td><td>${w.age<L?rm(w.need):''}</td><td>${w.bal==null?'':rm(w.bal)}</td><td>${w.spendM==null?'':rm(w.spendM)}</td></tr>`).join('');
+  F.textContent=X.gap>=0?`On track: your savings cover ${pct} of what you need and last to age ${L}.`:`Your savings cover ${pct} of what you need and run out around age ${X.lasts}.`;
+  $('#k1').textContent=`Savings at ${R}`;$('#v1').textContent=rm(X.total);$('#s1').textContent=`${rm(Math.min(X.put,X.total))} put in, ${rm(ret)} returns`;
+  $('#k2').textContent=`Fund needed at ${R}`;$('#v2').textContent=rm(X.fund);$('#s2').textContent=`Pays ${rm(X.needM)} a month at ${R}, rising with inflation`;
+  if(num('spend')<=0){F.classList.remove('err');F.textContent=`Savings at ${R}: ${rm(X.total)}. Add your monthly spending in retirement below to see if that is enough.`;$('#v2').textContent='–';$('#s2').textContent='Needs your monthly spending in retirement';['v3','v4'].forEach(i=>$('#'+i).textContent='–');['s3','s4','wh'].forEach(i=>$('#'+i).textContent='');$('#wg').innerHTML='';$('#sum').value='';$('#b1').textContent=`Savings at ${R}: ${rm(X.total)}`;$('#b2').textContent='Add monthly spending';return;}
+  $('#v3').textContent=pct;
+  const cls=X.status==='On track'?'ok':X.status==='Shortfall'?'short':'close';
+  $('#s3').innerHTML=`<span class="chip ${cls}">${X.status}</span>`;$('#s3').append(X.gap>=0?`Surplus ${rm(X.gap)}`:`Short ${rm(-X.gap)}`);
+  $('#v4').textContent=X.gap>=0?`Age ${L}+`:`Age ${X.lasts}`;$('#s4').textContent=X.gap>=0?'Your whole plan is covered':`About ${L-X.lasts} years short of age ${L}`;
+  const er=X.earliest==null?`Not before ${L}`:`Retire at ${X.earliest}`;
+  const W=X.gap<0?[['Ways to close the gap'],[`${rm(X.extra)} more a month`,`Invest this on top of your plan from now until ${R}`],[er,X.earliest==null?'Savings never catch up with the need':`${X.earliest-R} years later than planned, adding money until then`],[`${rm(X.afford)} a month`,`What your savings can pay in today's RM, instead of ${rm(num('spend'))}`]]
+    :[['What your plan allows'],[er,'The earliest age your savings cover'],[`${rm(X.afford)} a month`,"What your savings can pay in today's RM"],[`${rm(X.gap)} spare`,`Above the fund needed at ${R}`]];
+  $('#wh').textContent=W[0][0];$('#wg').innerHTML=W.slice(1).map(([b,s])=>`<div><b></b><span></span></div>`).join('');
+  [...$('#wg').children].forEach((d,i)=>{d.children[0].textContent=W[i+1][0];d.children[1].textContent=W[i+1][1];});
+  $('#sum').value=['*Retirement plan summary*',...(S.cName?[`Prepared for ${S.cName}`]:[]),`Age now ${X.a0}, retire at ${R}, plan to age ${L}`,`Monthly spending in retirement: ${rm(num('spend'))} in today's money`,'',`Savings at ${R}: ${rm(X.total)}`,`Fund needed at ${R}: ${rm(X.fund)}`,`Funded: ${pct} (${X.status})`,X.gap>=0?`Savings last to age ${L} or beyond`:`Savings run out around age ${X.lasts}`,X.gap<0?`To close the gap: invest ${rm(X.extra)} more a month, or retire at ${X.earliest==null?'a later age':X.earliest}`:`Earliest age to retire: ${X.earliest}`,'',`Assumptions: inflation ${pc(num('infl'))}, EPF dividend ${pc(num('div'))}, ${X.pl[1]} ${pc(X.r)}, ${pc(num('rAfter'))} after retirement`,'_Estimates only, not financial advice._',...(S.aName?['',`Prepared by ${S.aName}`]:[])].join('\n');
+  $('#b1').textContent=`${pct} funded`;$('#b2').textContent=X.gap>=0?`Savings last to ${L}+`:`Runs out around age ${X.lasts}`;
+}
+
+const svg=$('#chart');
+function hovText(){
+  if(!RES)return '';
+  const {rows,R,L}=RES,i=HOV==null||HOV>=rows.length?RES.N:HOV,w=rows[i];
+  if(w.age<=R)return `Age ${w.age}: savings ${rm(w.tot)}, from ${rm(Math.min(w.put,w.tot))} put in and ${rm(Math.max(0,w.tot-w.put))} returns.`+(w.need>0?` To retire at ${w.age} you would need ${rm(w.need)}.`:'');
+  if(w.bal>0)return w.age<L?`Age ${w.age}: ${rm(w.bal)} left. Spending at this age is ${rm(w.spendM)} a month after inflation.`:`Age ${w.age}: ${rm(w.bal)} left at the end of your plan.`;
+  return `Age ${w.age}: savings used up.`;
+}
+function draw(){
+  const W=svg.clientWidth,H=svg.clientHeight;
+  $('#hov').textContent=hovText()+(RES?' Tap or point at the chart to see another age.':'');
+  if(!RES||!W||!H){G=null;svg.innerHTML=W&&H?`<text class="ax" x="${W/2}" y="${H/2}" text-anchor="middle">Your lifeline appears here.</text>`:'';return;}
+  const {rows,N,R,L,gap}=RES,n=rows.length,nar=W<520;
+  const m={l:nar?56:60,r:nar?10:16,t:34,b:28},pw=W-m.l-m.r,ph=H-m.t-m.b,bw=pw/n;
+  G={l:m.l,bw,n};
+  let mx=1e5;rows.forEach(w=>{mx=Math.max(mx,w.age<=R?Math.max(w.tot,w.need):(w.bal||0));});
+  const st=nice(mx/4);mx=Math.ceil(mx*1.04/st)*st;
+  const X=i=>m.l+i*bw,C=i=>X(i)+bw/2,Y=v=>m.t+ph-v/mx*ph,B=Y(0);
+  const anc=x=>x<70?'start':x>W-70?'end':'middle';
+  const sp=Math.min(bw*.3,6),bi=Math.max(1,bw-sp),off=(bw-bi)/2;
+  let o='';
+  for(let v=0;v<=mx+st/2;v+=st)o+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l-6}" y="${Y(v)+4}" text-anchor="end">${short(v)}</text>`;
+  const iz=rows.findIndex(w=>w.age>R&&w.bal===0);
+  if(iz>0){const gw=W-m.r-X(iz);o+=`<rect class="gone" x="${X(iz)}" y="${m.t}" width="${gw}" height="${ph}"/>`+(gw>120?`<text class="gt" x="${X(iz)+gw/2}" y="${m.t+ph*.45}" text-anchor="middle">No savings left</text>`:'');}
+  if(HOV!=null&&HOV<n)o+=`<rect class="hl" x="${X(HOV)}" y="${m.t}" width="${bw}" height="${ph}"/>`;
+  rows.forEach((w,i)=>{const x=X(i)+off;
+    if(w.age<=R){const p=Math.min(w.put,w.tot);o+=`<rect class="cp" x="${x}" y="${Y(p)}" width="${bi}" height="${B-Y(p)}"/><rect class="cr" x="${x}" y="${Y(w.tot)}" width="${bi}" height="${Y(p)-Y(w.tot)}"/>`;}
+    else if(w.bal>0)o+=`<rect class="co" x="${x}" y="${Y(w.bal)}" width="${bi}" height="${B-Y(w.bal)}"/>`;});
+  o+=`<line class="base" x1="${m.l}" x2="${W-m.r}" y1="${B}" y2="${B}"/>`;
+  if(rows[0].need>0)o+=`<polyline class="nd" points="${rows.slice(0,N+1).map((w,i)=>C(i)+','+Y(w.need)).join(' ')}"/>`;
+  if(!nar&&rows[0].need>0)o+=`<text class="lb" x="${C(0)}" y="${Math.max(m.t+12,Y(rows[0].need)-12)}">Fund needed</text>`;
+  const xr=C(N);
+  o+=`<line class="rl" x1="${xr}" x2="${xr}" y1="${m.t-10}" y2="${B}"/><text class="lb" x="${xr}" y="${m.t-16}" text-anchor="${anc(xr)}">Retire at ${R}</text>`;
+  if(gap<0){const y1=Y(RES.total),y2=Y(RES.fund);o+=`<line class="gp" x1="${xr}" x2="${xr}" y1="${y1}" y2="${y2}"/><text class="lb or" x="${xr-8}" y="${(y1+y2)/2+4}" text-anchor="end">Gap ${short(-gap)}</text>`;}
+  if(iz>0){const xz=C(iz);const rt=xz<W-m.r-100;o+=`<circle class="dot" cx="${xz}" cy="${B}" r="5"/><text class="lb or" x="${rt?xz+10:W-m.r-4}" y="${rt?B-10:m.t+16}" text-anchor="${rt?'start':'end'}">Runs out ~${rows[iz].age-1}</text>`;}
+  else{const w=rows[n-1],mb=Math.max(0,...rows.filter(r=>r.age>R).map(r=>r.bal||0));o+=`<text class="lb" x="${W-m.r}" y="${Math.max(m.t-16,Y(mb)-10)}" text-anchor="end">${short(w.bal||0)} left at ${L}</text>`;}
+  const ts=nar?10:5;
+  rows.forEach((w,i)=>{if(w.age%ts===0)o+=`<text class="ax" x="${C(i)}" y="${H-8}" text-anchor="middle">${w.age}</text>`;});
+  o+=`<text class="ax" x="${m.l-6}" y="${H-8}" text-anchor="end">Age</text>`;
+  svg.innerHTML=o;
+}
+const pick=e=>{if(!G)return;const r=svg.getBoundingClientRect(),i=Math.floor((e.clientX-r.left-G.l)/G.bw);if(i>=0&&i<G.n&&i!==HOV){HOV=i;draw();}};
+svg.addEventListener('pointermove',pick);svg.addEventListener('pointerdown',pick);
+const ro=new ResizeObserver(()=>draw());ro.observe(svg);
+
+function sync(){
+  for(const el of document.querySelectorAll('input[data-k]:not([type=radio])'))if(el!==document.activeElement)el.value=S[el.dataset.k];
+}
+function update(){
+  save();
+  for(const b of document.querySelectorAll('.seg button'))b.setAttribute('aria-pressed',String(S[b.dataset.k]===b.dataset.v));
+  for(const el of document.querySelectorAll('[data-show]')){const [k,v]=el.dataset.show.split(':');el.hidden=S[k]!==v;}
+  for(const r of document.querySelectorAll('.pr')){const on=r.dataset.p===S.plat;r.classList.toggle('on',on);r.querySelector('input[type=radio]').checked=on;}
+  {const em=S.emp==='Yes',sl=num('sal'),a1=sl*eeR()/100,a2=sl*erR()/100,need='Fill in your monthly salary to see the amount';
+   for(const k of ['ee','er1']){const el=$('#'+k);el.disabled=!em;if(!em)el.value=0;else if(el!==document.activeElement)el.value=S[k];}
+   $('#a-ee').textContent=!em?'RM0 a month: no EPF while employer does not pay':sl>0?`${rm(sl)} × ${pc(eeR())} = ${rm(a1)} a month`:need;
+   $('#a-er1').textContent=!em?'RM0 a month':sl>0?`${rm(sl)} × ${pc(erR())} = ${rm(a2)} a month`:need;
+   $('#epft').textContent=!em?'Total into EPF: RM0 a month':sl>0?`Total into EPF: ${rm(a1+a2)} a month, ${rm((a1+a2)*12)} a year`:'';}
+  const err=check();RES=err?null:calc();
+  if(RES&&HOV!=null&&HOV>=RES.rows.length)HOV=null;
+  render(err);draw();
+}
+const onIn=e=>{const t=e.target,k=t.dataset&&t.dataset.k;if(!k)return;S[k]=t.type==='number'?(t.value===''?'':+t.value):t.value;update();};
+document.addEventListener('input',onIn);document.addEventListener('change',onIn);
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.v){S[b.dataset.k]=b.dataset.v;update();}
+  else if(b.dataset.step){const [k,d]=b.dataset.step.split(':');S[k]=S[k]===''||S[k]==null?{age:30,ret:60,life:85}[k]:Math.round(num(k)+(+d));sync();update();}
+  else if(b.id==='copy'){const t=$('#sum').value,msg=$('#cmsg'),fail=()=>{const a=$('#sum');a.focus();a.select();msg.textContent='Copy was blocked here. The text is selected, so copy it from the box.';};
+    try{navigator.clipboard.writeText(t).then(()=>{msg.textContent='Copied. Paste it into WhatsApp.';},fail);}catch(x){fail();}}
+  else if(b.id==='pdf')savePdf();
+  else if(b.id==='reset'){PREV={...S};S={...D,aName:S.aName};sync();update();$('#undo').hidden=false;$('#cmsg').textContent='All boxes cleared; rates are back to their starting values.';}
+  else if(b.id==='undo'){if(PREV){S=PREV;PREV=null;sync();update();}$('#undo').hidden=true;$('#cmsg').textContent='';}
+});
+
+const clean=t=>String(t??'').replace(/[^\x20-\x7E\xA0-\xFF]/g,'').replace(/\s+/g,' ');
+const today=iso=>new Date().toLocaleDateString(iso?'en-CA':'en-GB',iso?{timeZone:'Asia/Kuala_Lumpur'}:{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Kuala_Lumpur'});
+async function makePdf(){
+  const {PDFDocument,StandardFonts,rgb}=window.PDFLib;
+  const X=RES,{rows,R,L,N}=X,n=rows.length,pct=Math.round(X.funded*100)+'%';
+  const doc=await PDFDocument.create();doc.setTitle('Retirement plan summary');doc.setCreator('Retirement Calculator Malaysia');
+  const f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
+  const INK=rgb(.067,.071,.078),MUTE=rgb(.33,.345,.37),ORG=rgb(1,.31,0),ORGT=rgb(.7,.2,0),GREY=rgb(.61,.63,.66),ALU=rgb(.914,.918,.925),LINE=rgb(.78,.79,.81),YEL=rgb(1,.945,.63);
+  const PW=595.28,PH=841.89,M=42,CW=PW-2*M;
+  let pg=doc.addPage([PW,PH]);
+  const fo=o=>o.b?fb:f;
+  const T=(t,x,y,o={})=>{const s=clean(t),z=o.s||10,w=fo(o).widthOfTextAtSize(s,z);pg.drawText(s,{x:o.a==='r'?x-w:o.a==='c'?x-w/2:x,y,size:z,font:fo(o),color:o.c||INK});};
+  const wrap=(t,w,z,font)=>{const out=[];let ln='';for(const wd of clean(t).split(' ')){const tr=ln?ln+' '+wd:wd;if(ln&&font.widthOfTextAtSize(tr,z)>w){out.push(ln);ln=wd;}else ln=tr;}if(ln)out.push(ln);return out;};
+  const P=(t,x,y,w,o={})=>{const z=o.s||10,lh=o.lh||z*1.35;for(const l of wrap(t,w,z,fo(o))){T(l,x,y,o);y-=lh;}return y;};
+  const rect=(x,y,w,h,color,opacity)=>{if(h>0.05&&w>0.05)pg.drawRectangle({x,y,width:w,height:h,color,opacity});};
+  const line=(x1,y1,x2,y2,th,color,dash)=>pg.drawLine({start:{x:x1,y:y1},end:{x:x2,y:y2},thickness:th,color,dashArray:dash});
+  // header band
+  rect(0,PH-122,PW,122,ALU);
+  T('Retirement plan summary',M,PH-54,{b:1,s:24});
+  T(today(),PW-M,PH-54,{s:10,c:MUTE,a:'r'});
+  const pr=[clean(S.cName).trim()&&'Prepared for '+clean(S.cName).trim(),clean(S.aName).trim()&&'Prepared by '+clean(S.aName).trim()].filter(Boolean);
+  let y=PH-76;
+  if(pr.length){const wd=pr.map(t=>f.widthOfTextAtSize(t,10));if(wd.reduce((a,b)=>a+b,0)+28<=CW){T(pr[0],M,y,{s:10});if(pr[1])T(pr[1],M+wd[0]+28,y,{s:10});y-=15;}else pr.forEach(t=>{T(t,M,y,{s:10});y-=13;});}
+  P(`Age ${X.a0} today, retiring at ${R}, planning to age ${L}. Monthly spending in retirement: ${rm(num('spend'))} in today's money${num('inc')>0?`, less ${rm(num('inc'))} other income`:''}.`,M,y,CW,{s:10,c:MUTE});
+  // finding
+  y=P(X.gap>=0?`On track: the savings cover ${pct} of what is needed and last to age ${L}.`:`The savings cover ${pct} of what is needed and run out around age ${X.lasts}.`,M,PH-150,CW,{b:1,s:15,lh:19});
+  // figure boxes
+  const bx=(CW-24)/4,bh=66,by=y-bh+4,ret=X.total-Math.min(X.put,X.total);
+  [[`Savings at ${R}`,rm(X.total),`${rm(Math.min(X.put,X.total))} put in, ${rm(ret)} returns`],[`Fund needed at ${R}`,rm(X.fund),`Pays ${rm(X.needM)} a month at ${R}, rising with inflation`],['Funded',pct,`${X.status}. ${X.gap>=0?'Surplus '+rm(X.gap):'Short '+rm(-X.gap)}`],['Money lasts until',X.gap>=0?`Age ${L}+`:`Age ${X.lasts}`,X.earliest==null?`Savings never cover the need before ${L}`:`Earliest age to retire: ${X.earliest}`]].forEach(([k,v,sub],i)=>{
+    const x=M+i*(bx+8);rect(x,by,bx,bh,ALU);if(i===2)rect(x,by+bh-3,bx,3,X.status==='On track'?INK:ORG);
+    T(k,x+8,by+bh-16,{s:8.5,c:MUTE});T(v,x+8,by+bh-34,{b:1,s:15});P(sub,x+8,by+bh-47,bx-14,{s:7.5,c:MUTE,lh:9.5});});
+  // chart
+  const cx=M+44,cw=PW-M-cx,ch=150,top=by-30,cb=top-ch,bw=cw/n,bi=Math.max(.6,bw*.72);
+  let mx=1e5;rows.forEach(w=>{mx=Math.max(mx,w.age<=R?Math.max(w.tot,w.need):(w.bal||0));});
+  const st=nice(mx/4);mx=Math.ceil(mx*1.04/st)*st;
+  const Y=v=>cb+v/mx*ch,C=i=>cx+i*bw+bw/2;
+  for(let v=0;v<=mx+st/2;v+=st){line(cx,Y(v),cx+cw,Y(v),.4,LINE);T(short(v),cx-5,Y(v)-3,{a:'r',s:8,c:MUTE});}
+  const iz=rows.findIndex(w=>w.age>R&&w.bal===0);
+  if(iz>0)rect(cx+iz*bw,cb,cw-iz*bw,ch,ORG,.09);
+  rows.forEach((w,i)=>{const x=cx+i*bw+(bw-bi)/2;
+    if(w.age<=R){const p=Math.min(w.put,w.tot);rect(x,cb,bi,Y(p)-cb,INK);rect(x,Y(p),bi,Y(w.tot)-Y(p),GREY);}
+    else if(w.bal>0)rect(x,cb,bi,Y(w.bal)-cb,ORG);});
+  line(cx,cb,cx+cw,cb,1,INK);
+  if(rows[0].need>0){for(let i=0;i<N;i++)line(C(i),Y(rows[i].need),C(i+1),Y(rows[i+1].need),1.2,INK,[3,2]);T('Fund needed',C(0),Y(rows[0].need)+6,{b:1,s:8.5});}
+  const xr=C(N);line(xr,cb,xr,top+4,.6,INK);T(`Retire at ${R}`,xr,top+8,{b:1,s:8.5,a:xr<cx+40?'l':xr>PW-M-40?'r':'c'});
+  if(X.gap<0){line(xr,Y(X.total),xr,Y(X.fund),2.5,ORG);T(`Gap ${short(-X.gap)}`,xr-5,(Y(X.total)+Y(X.fund))/2-3,{b:1,s:8.5,c:ORGT,a:'r'});}
+  if(iz>0){const xz=C(iz);pg.drawCircle({x:xz,y:cb,size:2.6,color:ORG});const rt=xz<PW-M-70;T(`Runs out ~${rows[iz].age-1}`,rt?xz+5:PW-M,rt?cb+5:top-10,{b:1,s:8.5,c:ORGT,a:rt?'l':'r'});}
+  else{const w=rows[n-1],mb=Math.max(0,...rows.filter(r=>r.age>R).map(r=>r.bal||0));T(`${short(w.bal||0)} left at ${L}`,PW-M,Math.min(top+8,Y(mb)+6),{b:1,s:8.5,a:'r'});}
+  rows.forEach((w,i)=>{if(w.age%5===0)T(String(w.age),C(i),cb-12,{s:8,c:MUTE,a:'c'});});T('Age',cx-5,cb-12,{s:8,c:MUTE,a:'r'});
+  let lx=cx;const ly=cb-30;[[INK,'Money put in'],[GREY,'Returns earned'],[ORG,'Savings after retiring']].forEach(([c,t])=>{rect(lx,ly,8,8,c);T(t,lx+12,ly+1,{s:8.5});lx+=f.widthOfTextAtSize(t,8.5)+30;});
+  line(lx,ly+4,lx+16,ly+4,1.2,INK,[3,2]);T('Fund needed to retire at that age',lx+21,ly+1,{s:8.5});
+  // what to do
+  y=ly-26;T(X.gap<0?'Ways to close the gap':'What the plan allows',M,y,{b:1,s:11});
+  const er=X.earliest==null?`Not before ${L}`:`Retire at ${X.earliest}`;
+  const W=X.gap<0?[[`${rm(X.extra)} more a month`,`Invest this on top of the plan from now until ${R}`],[er,X.earliest==null?'Savings never catch up with the need':`${X.earliest-R} years later than planned, adding money until then`],[`${rm(X.afford)} a month`,`What the savings can pay in today's RM, instead of ${rm(num('spend'))}`]]
+    :[[er,'The earliest age the savings cover'],[`${rm(X.afford)} a month`,"What the savings can pay in today's RM"],[`${rm(X.gap)} spare`,`Above the fund needed at ${R}`]];
+  const ww=(CW-24)/3;W.forEach(([b,t],i)=>{const x=M+i*(ww+12);T(b,x,y-18,{b:1,s:12});P(t,x,y-31,ww,{s:8.5,c:MUTE,lh:10.5});});
+  // inputs and assumptions
+  y-=70;const pw=(CW-24)/2,inc=(m,pK,aK)=>S[m]==='Percent'?`${pc(num(pK))} a year`:`${rm(num(aK))} more a month each year`;
+  const cols=[['The figures used',[['Monthly salary today',rm(num('sal'))],['Salary increase',inc('sMode','sPct','sAmt')],['Employer pays EPF',S.emp],['EPF savings today',rm(num('epf0'))],['Other savings and investments',rm(num('oth0'))],['Extra investing each month',rm(num('inv'))],['Investing increase',inc('iMode','iPct','iAmt')],["Monthly spending in retirement (today's RM)",rm(num('spend'))],["Other monthly income (today's RM)",rm(num('inc'))]]],
+    ['Assumptions',[['Inflation in Malaysia',`${pc(num('infl'))} a year`],['EPF dividend',`${pc(num('div'))} a year`],['Other savings invested in',`${X.pl[1]}, ${pc(X.r)} a year`],['Return after retiring',`${pc(num('rAfter'))} a year`],['EPF: employee rate',pc(eeR())],['EPF: you pay today',`${rm(num('sal')*eeR()/100)} a month`],['EPF: employer rate',pc(erR())],['EPF: employer pays today',`${rm(num('sal')*erR()/100)} a month`]]]];
+  cols.forEach(([h,rs],c)=>{const x=M+c*(pw+24);let yy=y;T(h,x,yy,{b:1,s:11});yy-=6;rs.forEach(([k,v])=>{yy-=14;line(x,yy-4,x+pw,yy-4,.4,LINE);T(k,x,yy,{s:8.5,c:MUTE});T(v,x+pw,yy,{s:8.5,b:1,a:'r'});});});
+  P("Estimates only, based on the figures and assumptions above; returns, dividends and inflation are not guaranteed. Not included: EPF after age 60, tax, medical costs rising faster than inflation, one-off needs such as a home loan, education or Hajj, market falls and early EPF withdrawals. This is not financial advice. A year-by-year table follows.",M,M+22,CW,{s:7.5,c:MUTE,lh:9.5});
+  // year-by-year pages
+  const hd=['Age','Salary a month','Savings if still working','Fund needed to retire here','Savings after retiring','Spending a month'],cx2=[M,M+150,M+235,M+330,M+420,PW-M];
+  const head=()=>{pg=doc.addPage([PW,PH]);T('Year by year',M,PH-M-10,{b:1,s:16});let yy=PH-M-38;hd.forEach((h,i)=>{const ls=wrap(h,80,8.5,fb);ls.forEach((l,j)=>T(l,cx2[i],yy+(ls.length-1-j)*10,{b:1,s:8.5,a:i?'r':'l'}));});line(M,yy-5,PW-M,yy-5,.8,INK);return yy-18;};
+  y=head();
+  rows.forEach(w=>{if(y<M+20)y=head();if(w.age===R)rect(M-4,y-3.5,CW+8,12.5,YEL);
+    [String(w.age),w.age<R?rm(w.sal):'',rm(w.tot),w.age<L?rm(w.need):'',w.bal==null?'':rm(w.bal),w.spendM==null?'':rm(w.spendM)].forEach((v,i)=>T(v,cx2[i],y,{s:8,a:i?'r':'l',b:w.age===R}));
+    line(M,y-3.5,PW-M,y-3.5,.3,LINE);y-=12.5;});
+  const pages=doc.getPages();pages.forEach((p,i)=>p.drawText(`Page ${i+1} of ${pages.length}`,{x:PW-M-50,y:20,size:7.5,font:f,color:MUTE}));
+  return await doc.save();
+}
+let DL=null;
+(async()=>{try{DL=await window.claude?.use?.('downloads');}catch(e){DL=null;}})();
+const direct=(bytes,name)=>{const u=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'})),a=document.createElement('a');a.href=u;a.download=name;a.rel='noopener';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);};
+const directMsg='PDF downloaded. On iPhone or iPad, find it in the Files app under Downloads.';
+const framed=(()=>{try{return window.self!==window.top;}catch(e){return true;}})();
+const noSave="Saving the PDF on this link is limited to signed-in members of the calculator owner's Claude organization. Use Copy for WhatsApp to send the summary instead.";
+async function savePdf(){
+  const msg=$('#cmsg');
+  if(!RES||num('spend')<=0){msg.textContent='Fill in the three ages and the monthly spending first.';return;}
+  if(!window.PDFLib){msg.textContent='The PDF maker is still loading. Try again in a moment.';return;}
+  msg.textContent='Making the PDF…';
+  let bytes;try{bytes=await makePdf();}catch(e){msg.textContent='Could not make the PDF. Try again.';return;}
+  const nm=clean(S.cName).trim().replace(/[\\/:*?"<>|]/g,'');
+  const fn=`Retirement plan${nm?' - '+nm:''} ${today(1)}.pdf`;
+  if(!DL){if(framed){msg.textContent=noSave;return;}try{direct(bytes,fn);msg.textContent=directMsg;}catch(e){msg.textContent='Could not download the PDF here. Open the calculator link in a browser tab and try again.';}return;}
+  try{const r=await DL.save({filename:fn,data:bytes.slice(0)});msg.textContent=r.status==='saved'?'PDF saved. You can now send it to your client.':'PDF sent.';}
+  catch(e){const c=e&&e.code;
+    if(c==='declined'){msg.textContent='PDF not saved.';return;}
+    if(c==='rate_limited'){msg.textContent='A save is already open. Try again in a moment.';return;}
+    if(c==='host_unavailable'){msg.textContent='This app cannot save files here. Open the calculator in a browser or on a computer to save the PDF.';return;}
+    if(framed){msg.textContent=noSave;return;}
+    DL=null;try{direct(bytes,fn);msg.textContent=directMsg;}catch(x){msg.textContent='Could not download the PDF here. Open the calculator link in a browser tab and try again.';}}
+}
+const bar=$('#bar');
+const io=new IntersectionObserver(es=>{for(const e of es)bar.classList.toggle('show',!e.isIntersecting&&e.boundingClientRect.top<0&&!!RES);});
+io.observe($('#figs'));
+
+const start=data=>{
+  try{const j=JSON.parse(localStorage.getItem('rcm-app-v2')||'null');if(j&&typeof j==='object')for(const k in D)if(k in j)S[k]=j[k];}catch(e){}
+  if(data&&data.S)for(const k in D)if(k in data.S)S[k]=data.S[k];
+  sync();update();
+};
+window.claude?.hot?.snapshot?.(()=>({S}));
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+}
+</script>
+</body>
+</html>
