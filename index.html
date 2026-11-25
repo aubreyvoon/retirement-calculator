@@ -46,7 +46,7 @@ h1{font-size:clamp(30px,4.2vw,44px);line-height:1.05;letter-spacing:-.02em;margi
 .stp button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .stp:focus-within{outline:2px solid var(--org);outline-offset:1px}
 .yrs{grid-column:1/-1;font-size:14px;color:var(--mute);margin:0}
-.who{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:4px}
+.who{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 12px;margin-bottom:4px}
 .who .f{margin:0;gap:4px}
 .who .f .l{font-size:14px}
 .stp button:disabled{opacity:.3;cursor:not-allowed}
@@ -152,7 +152,7 @@ tr.r td{background:var(--yel);font-weight:600}
 @media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.head{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:900px){.figs{grid-template-columns:repeat(2,minmax(0,1fr))}.fg:nth-child(3){border-left:0;padding-left:0}.fg:nth-child(n+3){border-top:1px solid var(--line)}}
 @media(max-width:640px){.grid,.out,.two{grid-template-columns:minmax(0,1fr)}.wg{grid-template-columns:minmax(0,1fr)}.fig{min-height:300px}}
-@media(max-width:600px){.who{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.who .f:first-child{grid-column:1/-1}.stp{grid-template-columns:1fr 1fr}.stp input{grid-column:1/-1;grid-row:1;height:48px;font-size:26px}.stp button{grid-row:2;border-top:1px solid var(--yelb);min-height:40px}.fg .v{font-size:24px}.wg b{font-size:24px}}
+@media(max-width:600px){.who{grid-template-columns:minmax(0,1fr)}.stp{grid-template-columns:1fr 1fr}.stp input{grid-column:1/-1;grid-row:1;height:48px;font-size:26px}.stp button{grid-row:2;border-top:1px solid var(--yelb);min-height:40px}.fg .v{font-size:24px}.wg b{font-size:24px}}
 </style>
 </head>
 <body>
@@ -166,6 +166,7 @@ tr.r td{background:var(--yel);font-weight:600}
     <div class="ages">
       <div class="who">
         <label class="f" for="cName"><span class="l">Prepared for (client name)</span><span class="in"><input id="cName" data-k="cName" type="text" autocomplete="off" placeholder="Client's name"></span></label>
+        <label class="f" for="contact"><span class="l">Contact</span><span class="in"><input id="contact" data-k="contact" type="text" autocomplete="off" inputmode="tel" placeholder="Phone or email"></span></label>
         <label class="f" for="occ"><span class="l">Occupation</span><span class="in"><input id="occ" data-k="occ" type="text" autocomplete="off" placeholder="e.g. Engineer"></span></label>
         <label class="f" for="dob"><span class="l">Date of birth</span><span class="in"><input id="dob" data-k="dob" type="date" min="1910-01-01"></span></label>
       </div>
@@ -242,7 +243,7 @@ tr.r td{background:var(--yel);font-weight:600}
 <script>
 {
 const $=s=>document.querySelector(s);
-const D={cName:'',occ:'',dob:'',aName:'',age:'',ret:'',life:'',sal:0,emp:'Yes',epf0:0,oth0:0,inv:0,sMode:'Percent',sPct:3,sAmt:0,iMode:'Percent',iPct:3,iAmt:0,spend:0,inc:0,infl:3,div:5.5,plat:'ut',custom:6,rAfter:4,ee:11,er1:13,rfd:2.5,rasb:5.75,rut:5,rprs:5,rstk:7};
+const D={cName:'',contact:'',occ:'',dob:'',aName:'',age:'',ret:'',life:'',sal:0,emp:'Yes',epf0:0,oth0:0,inv:0,sMode:'Percent',sPct:3,sAmt:0,iMode:'Percent',iPct:3,iAmt:0,spend:0,inc:0,infl:3,div:5.5,plat:'ut',custom:6,rAfter:4,ee:11,er1:13,rfd:2.5,rasb:5.75,rut:5,rprs:5,rstk:7};
 const PL=[['fd','Fixed deposit','rfd'],['asb','ASB','rasb'],['ut','Unit trust (balanced)','rut'],['prs','PRS (moderate)','rprs'],['stk','Stocks / equity funds','rstk'],['custom','Custom','custom']];
 const P=[
  ['Your money today',[['sal','Monthly salary today','rm','Gross monthly wage that EPF is based on'],['emp','Employer pays EPF for you?','seg:Yes,No','Choose No if self-employed; both EPF rates then become 0%'],['epf0','EPF savings today','rm','Total balance in your KWSP i-Akaun'],['oth0','Other savings and investments today','rm','ASB, PRS, FD, unit trusts, shares'],['inv','Extra investing each month','rm','On top of EPF, into the platform you pick']]],
@@ -329,7 +330,7 @@ function render(err){
     :[['What your plan allows'],[er,'The earliest age your savings cover'],[`${rm(X.afford)} a month`,"What your savings can pay in today's RM"],[`${rm(X.gap)} spare`,`Above the fund needed at ${R}`]];
   $('#wh').textContent=W[0][0];$('#wg').innerHTML=W.slice(1).map(([b,s])=>`<div><b></b><span></span></div>`).join('');
   [...$('#wg').children].forEach((d,i)=>{d.children[0].textContent=W[i+1][0];d.children[1].textContent=W[i+1][1];});
-  $('#sum').value=['*Retirement plan summary*',...(S.cName?[`Prepared for ${S.cName}`]:[]),...(S.occ?[`Occupation: ${S.occ}`]:[]),`Age now ${X.a0}, retire at ${R}, plan to age ${L}`,`Monthly spending in retirement: ${rm(num('spend'))} in today's money`,'',`Savings at ${R}: ${rm(X.total)}`,`Fund needed at ${R}: ${rm(X.fund)}`,`Funded: ${pct} (${X.status})`,X.gap>=0?`Savings last to age ${L} or beyond`:`Savings run out around age ${X.lasts}`,X.gap<0?`To close the gap: invest ${rm(X.extra)} more a month, or retire at ${X.earliest==null?'a later age':X.earliest}`:`Earliest age to retire: ${X.earliest}`,'',`Assumptions: inflation ${pc(num('infl'))}, EPF dividend ${pc(num('div'))}, ${X.pl[1]} ${pc(X.r)}, ${pc(num('rAfter'))} after retirement`,'_Estimates only, not financial advice._',...(S.aName?['',`Prepared by ${S.aName}`]:[])].join('\n');
+  $('#sum').value=['*Retirement plan summary*',...(S.cName?[`Prepared for ${S.cName}`]:[]),...(S.occ?[`Occupation: ${S.occ}`]:[]),...(S.contact?[`Contact: ${S.contact}`]:[]),`Age now ${X.a0}, retire at ${R}, plan to age ${L}`,`Monthly spending in retirement: ${rm(num('spend'))} in today's money`,'',`Savings at ${R}: ${rm(X.total)}`,`Fund needed at ${R}: ${rm(X.fund)}`,`Funded: ${pct} (${X.status})`,X.gap>=0?`Savings last to age ${L} or beyond`:`Savings run out around age ${X.lasts}`,X.gap<0?`To close the gap: invest ${rm(X.extra)} more a month, or retire at ${X.earliest==null?'a later age':X.earliest}`:`Earliest age to retire: ${X.earliest}`,'',`Assumptions: inflation ${pc(num('infl'))}, EPF dividend ${pc(num('div'))}, ${X.pl[1]} ${pc(X.r)}, ${pc(num('rAfter'))} after retirement`,'_Estimates only, not financial advice._',...(S.aName?['',`Prepared by ${S.aName}`]:[])].join('\n');
   $('#b1').textContent=`${pct} funded`;$('#b2').textContent=X.gap>=0?`Savings last to ${L}+`:`Runs out around age ${X.lasts}`;
 }
 
@@ -436,7 +437,7 @@ async function makePdf(){
   rect(0,PH-122,PW,122,ALU);
   T('Retirement plan summary',M,PH-54,{b:1,s:24});
   T(today(),PW-M,PH-54,{s:10,c:MUTE,a:'r'});
-  const pr=[clean(S.cName).trim()&&'Prepared for '+clean(S.cName).trim()+(clean(S.occ).trim()?' ('+clean(S.occ).trim()+')':''),clean(S.aName).trim()&&'Prepared by '+clean(S.aName).trim()].filter(Boolean);
+  const pr=[clean(S.cName).trim()&&'Prepared for '+clean(S.cName).trim()+(clean(S.occ).trim()?' ('+clean(S.occ).trim()+')':'')+(clean(S.contact).trim()?', '+clean(S.contact).trim():''),clean(S.aName).trim()&&'Prepared by '+clean(S.aName).trim()].filter(Boolean);
   let y=PH-76;
   if(pr.length){const wd=pr.map(t=>f.widthOfTextAtSize(t,10));if(wd.reduce((a,b)=>a+b,0)+28<=CW){T(pr[0],M,y,{s:10});if(pr[1])T(pr[1],M+wd[0]+28,y,{s:10});y-=15;}else pr.forEach(t=>{T(t,M,y,{s:10});y-=13;});}
   P(`Age ${X.a0} today, retiring at ${R}, planning to age ${L}. Monthly spending in retirement: ${rm(num('spend'))} in today's money${num('inc')>0?`, less ${rm(num('inc'))} other income`:''}.`,M,y,CW,{s:10,c:MUTE});
@@ -534,8 +535,8 @@ const recErr=(e,write)=>{const c=e&&e.code;
 async function post(o){if(!getKey())throw {code:'passcode'};let r,j=null;try{r=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({...o,key:getKey()})});}catch(e){throw {code:'network'};}
   try{j=await r.json();}catch(e){throw {code:'network'};}if(!j||!j.ok)throw {code:(j&&j.error)||'script_error'};try{sessionStorage.setItem('rcm-key',getKey());}catch(e){}return j;}
 (async()=>{let m=null;try{m=await window.claude?.use?.('mcp');}catch(e){m=null;}
-  if(m){BK={save:async row=>{const n=33+(await BK.list()).length;return m.callTool('Google Sheets','update_values',{spreadsheetId:SHEET_ID,range:`'${TAB}'!A${n}:AH${n}`,values:[row]});},
-      list:async()=>{const r=await m.callTool('Google Sheets','get_values',{spreadsheetId:SHEET_ID,range:`'${TAB}'!A33:AH`},{cache:false});const p=(r&&r.payload)||{};return p.values||(p.content&&p.content.values)||[];}};
+  if(m){BK={save:async row=>{const n=33+(await BK.list()).length;return m.callTool('Google Sheets','update_values',{spreadsheetId:SHEET_ID,range:`'${TAB}'!A${n}:AI${n}`,values:[row]});},
+      list:async()=>{const r=await m.callTool('Google Sheets','get_values',{spreadsheetId:SHEET_ID,range:`'${TAB}'!A33:AI`},{cache:false});const p=(r&&r.payload)||{};return p.values||(p.content&&p.content.values)||[];}};
     $('#recWhere').textContent='Saves each client as a new row in the '+TAB+' tab of your Google Sheet, using your Google Sheets connection in Claude.';}
   else if(SCRIPT_URL&&!framed){BK={save:row=>post({action:'save',row}),list:async()=>(await post({action:'list'})).rows||[]};
     $('#keyRow').hidden=false;try{$('#recKey').value=sessionStorage.getItem('rcm-key')||'';}catch(e){}
@@ -547,13 +548,14 @@ async function refreshList(){if(!BK)return;rmsg('Loading saved clients…');let 
   const sel=$('#recSel'),cur=sel.value;sel.length=1;[...RECS.keys()].sort((a,b)=>a.localeCompare(b)).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.append(o);});
   if(RECS.has(cur))sel.value=cur;rmsg(RECS.size?`${RECS.size} saved client${RECS.size>1?'s':''}. Choose one and press Load client.`:'No saved clients yet.');}
 function loadClient(){const n=$('#recSel').value;if(!n){rmsg(RECS.size?'Choose a client first.':'Press Refresh list to see saved clients.');return;}
-  const r=RECS.get(n);let d=null;try{d=JSON.parse(String(r[33]||'').replace(/^'/,''));}catch(e){d=null;}
+  const r=RECS.get(n);let d=null;try{d=JSON.parse(String(r[34]||'').replace(/^'/,''));}catch(e){d=null;}
   if(!d||typeof d!=='object'){rmsg('This record has no calculator data to load.');return;}
   const next={...D};for(const k in D)if(k in d&&(typeof d[k]==='string'||typeof d[k]==='number'))next[k]=d[k];
   if(S.aName)next.aName=S.aName;S=next;sync();update();rmsg(`Loaded ${n}, saved ${r[0]||''}.`);}
 function recRow(){const X=RES,safe=t=>{t=String(t??'').trim();return /^[=+\-@]/.test(t)?"'"+t:t;},rise=(m,p,a)=>S[m]==='Percent'?`${pc(num(p))} a year`:`${rm(num(a))} more a month each year`;
   const t=new Date().toLocaleString('sv-SE',{timeZone:'Asia/Kuala_Lumpur',hour12:false}).slice(0,16);
-  return [t,safe(S.cName),safe(S.occ),/^\d{4}-\d{2}-\d{2}$/.test(S.dob||'')?S.dob:'',X.a0,X.R,X.L,num('sal'),rise('sMode','sPct','sAmt'),S.emp,eeR()/100,erR()/100,num('epf0'),num('oth0'),num('inv'),rise('iMode','iPct','iAmt'),X.pl[1],X.r/100,num('spend'),num('inc'),num('infl')/100,num('div')/100,num('rAfter')/100,Math.round(X.total),Math.round(X.fund),Math.round(X.funded*1000)/1000,X.status,Math.round(X.gap),X.gap>=0?X.L:X.lasts,Math.round(X.extra),X.earliest==null?'':X.earliest,Math.round(X.afford),safe(S.aName),JSON.stringify(S)];}
+  const ct=String(S.contact||'').trim();
+  return [t,safe(S.cName),safe(S.occ),ct?"'"+ct:'',/^\d{4}-\d{2}-\d{2}$/.test(S.dob||'')?S.dob:'',X.a0,X.R,X.L,num('sal'),rise('sMode','sPct','sAmt'),S.emp,eeR()/100,erR()/100,num('epf0'),num('oth0'),num('inv'),rise('iMode','iPct','iAmt'),X.pl[1],X.r/100,num('spend'),num('inc'),num('infl')/100,num('div')/100,num('rAfter')/100,Math.round(X.total),Math.round(X.fund),Math.round(X.funded*1000)/1000,X.status,Math.round(X.gap),X.gap>=0?X.L:X.lasts,Math.round(X.extra),X.earliest==null?'':X.earliest,Math.round(X.afford),safe(S.aName),JSON.stringify(S)];}
 async function saveClient(){if(!BK)return;if(!RES||num('spend')<=0){rmsg('Fill in the ages and the monthly spending first.');return;}
   if(!String(S.cName||'').trim()){rmsg("Add the client's name at the top first.");$('#cName').focus();return;}
   const b=$('#recSave'),n=String(S.cName).trim();b.disabled=true;rmsg('Saving…');
