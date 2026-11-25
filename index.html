@@ -20,7 +20,11 @@
    COLOUR aluminium first screen, black ink, orange pointer for retirement years; yellow input boxes as the user asked; night #141517
    TYPE Geist 700 + Geist
    LAYOUT laptop: title left and the three ages right, finding, figure row, full-width chart, input panels in three columns; phone: stacked, slim result bar while scrolling */
-:root{color-scheme:light dark;--bg:light-dark(#ffffff,#141517);--alu:light-dark(#e9eaec,#1c1e21);--ink:light-dark(#111214,#eceef0);--mute:light-dark(#54585e,#a4a8ae);--line:light-dark(#c6c9ce,#383c42);--panel:light-dark(#f5f6f7,#191b1e);--grey:light-dark(#9ba1a9,#6b7179);--org:light-dark(#ff4f00,#ff6a26);--orgt:light-dark(#b23400,#ff8c55);--yel:light-dark(#fff1a1,#38320f);--yelb:light-dark(#d4b62e,#8a7a22)}
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#141517);--alu:light-dark(#e9eaec,#1c1e21);--ink:light-dark(#111214,#eceef0);--mute:light-dark(#54585e,#a4a8ae);--line:light-dark(#c6c9ce,#383c42);--panel:light-dark(#f5f6f7,#191b1e);--grey:light-dark(#9ba1a9,#6b7179);--org:light-dark(#ff4f00,#ff6a26);--orgt:light-dark(#b23400,#ff8c55);--yel:light-dark(#fff1a1,#38320f);--yelb:light-dark(#d4b62e,#8a7a22);--grn:light-dark(#1f9a52,#3cc878);--pos:light-dark(#0b6b2e,#86e8a8);--posbg:light-dark(#d2f4dc,#143d24);--neg:light-dark(#b0160b,#ffa197);--negbg:light-dark(#fde0dc,#4d1814)}
+.pos,.neg{font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;padding:0 .2em;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.pos{color:var(--pos);background:var(--posbg)}
+.neg{color:var(--neg);background:var(--negbg)}
+.fg .s .pos,.fg .s .neg{white-space:nowrap;display:inline-block;margin-top:2px}
 :root[data-theme=light]{color-scheme:light}
 :root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
@@ -49,9 +53,8 @@ h2.find.err{color:var(--orgt)}
 .fg .v{font-size:clamp(24px,3vw,36px);font-weight:600;letter-spacing:-.02em;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums}
 .fg .s{font-size:14px;color:var(--mute)}
 .chip{display:inline-block;font-size:13px;font-weight:600;padding:1px 8px;border-radius:99px;margin-right:6px;white-space:nowrap}
-.chip.ok{background:var(--ink);color:var(--bg)}
-.chip.close{background:color-mix(in srgb,var(--org) 22%,transparent);color:var(--orgt)}
-.chip.short{background:var(--org);color:#111214}
+.chip.ok{background:var(--posbg);color:var(--pos)}
+.chip.close,.chip.short{background:var(--negbg);color:var(--neg)}
 .chart{margin-top:24px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;align-items:center}
 .legend i{display:inline-block;width:14px;height:14px;border-radius:2px;vertical-align:-2px;margin-right:6px}
@@ -66,7 +69,7 @@ svg text{paint-order:stroke;stroke:var(--alu);stroke-width:4px;stroke-linejoin:r
 .gt{font-size:13px}
 .gr{stroke:var(--line);stroke-width:1}
 .base{stroke:var(--ink);stroke-width:1.5}
-.cp{fill:var(--ink)}
+.cp{fill:var(--grn)}
 .cr{fill:var(--grey)}
 .co{fill:var(--org)}
 .nd{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:6 4}
@@ -76,10 +79,10 @@ svg text{paint-order:stroke;stroke:var(--alu);stroke-width:4px;stroke-linejoin:r
 .gone{fill:var(--org);opacity:.09}
 .hl{fill:var(--ink);opacity:.08}
 .ways{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
-.ways h3{font-size:16px;margin:0 0 8px;font-weight:600}
-.wg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px}
-.wg b{display:block;font-size:22px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
-.wg span{font-size:14px;color:var(--mute)}
+.ways h3{font-size:clamp(22px,2.6vw,28px);line-height:1.2;margin:0 0 12px;font-weight:700;letter-spacing:-.01em}
+.wg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 28px}
+.wg b{display:block;font-size:clamp(24px,2.6vw,30px);line-height:1.2;font-weight:600;letter-spacing:-.015em;text-wrap:balance;margin-bottom:4px}
+.wg span{font-size:16px;color:var(--mute)}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 6px}
 .panel h2{font-size:18px;margin:0 0 14px;font-weight:600}
@@ -134,7 +137,7 @@ tr.r td{background:var(--yel);font-weight:600}
 @media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.head{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:900px){.figs{grid-template-columns:repeat(2,minmax(0,1fr))}.fg:nth-child(3){border-left:0;padding-left:0}.fg:nth-child(n+3){border-top:1px solid var(--line)}}
 @media(max-width:640px){.grid,.out,.two{grid-template-columns:minmax(0,1fr)}.wg{grid-template-columns:minmax(0,1fr)}.fig{min-height:300px}}
-@media(max-width:600px){.stp{grid-template-columns:1fr 1fr}.stp input{grid-column:1/-1;grid-row:1;height:48px;font-size:26px}.stp button{grid-row:2;border-top:1px solid var(--yelb);min-height:40px}.fg .v{font-size:24px}.wg b{font-size:20px}}
+@media(max-width:600px){.stp{grid-template-columns:1fr 1fr}.stp input{grid-column:1/-1;grid-row:1;height:48px;font-size:26px}.stp button{grid-row:2;border-top:1px solid var(--yelb);min-height:40px}.fg .v{font-size:24px}.wg b{font-size:24px}}
 </style>
 </head>
 <body>
@@ -160,7 +163,7 @@ tr.r td{background:var(--yel);font-weight:600}
     <div class="fg"><div class="k">Money lasts until</div><div class="v" id="v4"></div><div class="s" id="s4"></div></div>
   </div>
   <div class="chart">
-    <div class="legend"><span><i style="background:var(--ink)"></i>Money you put in</span><span><i style="background:var(--grey)"></i>Returns earned</span><span><i style="background:var(--org)"></i>Savings after you retire</span><span><i class="dash"></i>Fund needed to retire at that age</span></div>
+    <div class="legend"><span><i style="background:var(--grn)"></i>Money you put in</span><span><i style="background:var(--grey)"></i>Returns earned</span><span><i style="background:var(--org)"></i>Savings after you retire</span><span><i class="dash"></i>Fund needed to retire at that age</span></div>
     <p class="hov" id="hov" aria-live="polite"></p>
     <div class="fig"><svg id="chart" role="img" aria-label="Lifeline chart of savings by age"></svg></div>
   </div>
@@ -282,16 +285,17 @@ function render(err){
   $('#yrs').textContent=`${N} years to retirement, then ${L-R} years in retirement.`;
   $('#use').textContent=`Using ${pc(X.r)} a year on ${X.pl[1]}.`;
   $('#tb').innerHTML=X.rows.map(w=>`<tr${w.age===R?' class="r"':''}><td>${w.age}</td><td>${w.age<R?rm(w.sal):''}</td><td>${w.age<R?rm(w.c):''}</td><td>${w.age<R?rm(w.x):''}</td><td>${rm(w.tot)}</td><td>${w.age<L?rm(w.need):''}</td><td>${w.bal==null?'':rm(w.bal)}</td><td>${w.spendM==null?'':rm(w.spendM)}</td></tr>`).join('');
-  F.textContent=X.gap>=0?`On track: your savings cover ${pct} of what you need and last to age ${L}.`:`Your savings cover ${pct} of what you need and run out around age ${X.lasts}.`;
+  const good=X.gap>=0,hl=t=>{const s=document.createElement('span');s.className=good?'pos':'neg';s.textContent=t;return s;},put=(el,...p)=>{el.textContent='';el.append(...p);};
+  if(good)put(F,hl('On track'),`: your savings cover ${pct} of what you need and last to age ${L}.`);else put(F,`Your savings cover ${pct} of what you need and `,hl(`run out around age ${X.lasts}`),'.');
   $('#k1').textContent=`Savings at ${R}`;$('#v1').textContent=rm(X.total);$('#s1').textContent=`${rm(Math.min(X.put,X.total))} put in, ${rm(ret)} returns`;
   $('#k2').textContent=`Fund needed at ${R}`;$('#v2').textContent=rm(X.fund);$('#s2').textContent=`Pays ${rm(X.needM)} a month at ${R}, rising with inflation`;
   if(num('spend')<=0){F.classList.remove('err');F.textContent=`Savings at ${R}: ${rm(X.total)}. Add your monthly spending in retirement below to see if that is enough.`;$('#v2').textContent='–';$('#s2').textContent='Needs your monthly spending in retirement';['v3','v4'].forEach(i=>$('#'+i).textContent='–');['s3','s4','wh'].forEach(i=>$('#'+i).textContent='');$('#wg').innerHTML='';$('#sum').value='';$('#b1').textContent=`Savings at ${R}: ${rm(X.total)}`;$('#b2').textContent='Add monthly spending';return;}
-  $('#v3').textContent=pct;
+  put($('#v3'),hl(pct));
   const cls=X.status==='On track'?'ok':X.status==='Shortfall'?'short':'close';
-  $('#s3').innerHTML=`<span class="chip ${cls}">${X.status}</span>`;$('#s3').append(X.gap>=0?`Surplus ${rm(X.gap)}`:`Short ${rm(-X.gap)}`);
-  $('#v4').textContent=X.gap>=0?`Age ${L}+`:`Age ${X.lasts}`;$('#s4').textContent=X.gap>=0?'Your whole plan is covered':`About ${L-X.lasts} years short of age ${L}`;
+  $('#s3').innerHTML=`<span class="chip ${cls}">${X.status}</span>`;$('#s3').append(hl(good?`Surplus ${rm(X.gap)}`:`Short ${rm(-X.gap)}`));
+  put($('#v4'),hl(good?`Age ${L}+`:`Age ${X.lasts}`));$('#s4').textContent=X.gap>=0?'Your whole plan is covered':`About ${L-X.lasts} years short of age ${L}`;
   const er=X.earliest==null?`Not before ${L}`:`Retire at ${X.earliest}`;
-  const W=X.gap<0?[['Ways to close the gap'],[`${rm(X.extra)} more a month`,`Invest this on top of your plan from now until ${R}`],[er,X.earliest==null?'Savings never catch up with the need':`${X.earliest-R} years later than planned, adding money until then`],[`${rm(X.afford)} a month`,`What your savings can pay in today's RM, instead of ${rm(num('spend'))}`]]
+  const W=X.gap<0?[['Ways to close the gap'],[`${rm(X.extra)} more a month`,`Invest this on top of your plan from now until ${R}`],[er,X.earliest==null?'Savings never catch up with the need':`${X.earliest-R} years later than planned, adding money until then`],[`Spend only ${rm(X.afford)} a month`,`What your savings can pay in today's RM, instead of ${rm(num('spend'))} your desired spending`]]
     :[['What your plan allows'],[er,'The earliest age your savings cover'],[`${rm(X.afford)} a month`,"What your savings can pay in today's RM"],[`${rm(X.gap)} spare`,`Above the fund needed at ${R}`]];
   $('#wh').textContent=W[0][0];$('#wg').innerHTML=W.slice(1).map(([b,s])=>`<div><b></b><span></span></div>`).join('');
   [...$('#wg').children].forEach((d,i)=>{d.children[0].textContent=W[i+1][0];d.children[1].textContent=W[i+1][1];});
@@ -381,7 +385,7 @@ async function makePdf(){
   const X=RES,{rows,R,L,N}=X,n=rows.length,pct=Math.round(X.funded*100)+'%';
   const doc=await PDFDocument.create();doc.setTitle('Retirement plan summary');doc.setCreator('Retirement Calculator Malaysia');
   const f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
-  const INK=rgb(.067,.071,.078),MUTE=rgb(.33,.345,.37),ORG=rgb(1,.31,0),ORGT=rgb(.7,.2,0),GREY=rgb(.61,.63,.66),ALU=rgb(.914,.918,.925),LINE=rgb(.78,.79,.81),YEL=rgb(1,.945,.63);
+  const INK=rgb(.067,.071,.078),MUTE=rgb(.33,.345,.37),ORG=rgb(1,.31,0),ORGT=rgb(.7,.2,0),GREY=rgb(.61,.63,.66),ALU=rgb(.914,.918,.925),LINE=rgb(.78,.79,.81),YEL=rgb(1,.945,.63),PUT=rgb(.122,.604,.322),GOOD=X.gap>=0,SIG=GOOD?rgb(.043,.42,.18):rgb(.69,.086,.043),SIGBG=GOOD?rgb(.824,.957,.863):rgb(.992,.878,.863);
   const PW=595.28,PH=841.89,M=42,CW=PW-2*M;
   let pg=doc.addPage([PW,PH]);
   const fo=o=>o.b?fb:f;
@@ -399,12 +403,14 @@ async function makePdf(){
   if(pr.length){const wd=pr.map(t=>f.widthOfTextAtSize(t,10));if(wd.reduce((a,b)=>a+b,0)+28<=CW){T(pr[0],M,y,{s:10});if(pr[1])T(pr[1],M+wd[0]+28,y,{s:10});y-=15;}else pr.forEach(t=>{T(t,M,y,{s:10});y-=13;});}
   P(`Age ${X.a0} today, retiring at ${R}, planning to age ${L}. Monthly spending in retirement: ${rm(num('spend'))} in today's money${num('inc')>0?`, less ${rm(num('inc'))} other income`:''}.`,M,y,CW,{s:10,c:MUTE});
   // finding
-  y=P(X.gap>=0?`On track: the savings cover ${pct} of what is needed and last to age ${L}.`:`The savings cover ${pct} of what is needed and run out around age ${X.lasts}.`,M,PH-150,CW,{b:1,s:15,lh:19});
+  y=P(X.gap>=0?`On track: the savings cover ${pct} of what is needed and last to age ${L}.`:`The savings cover ${pct} of what is needed and run out around age ${X.lasts}.`,M,PH-150,CW,{b:1,s:15,lh:19,c:SIG});
   // figure boxes
   const bx=(CW-24)/4,bh=66,by=y-bh+4,ret=X.total-Math.min(X.put,X.total);
   [[`Savings at ${R}`,rm(X.total),`${rm(Math.min(X.put,X.total))} put in, ${rm(ret)} returns`],[`Fund needed at ${R}`,rm(X.fund),`Pays ${rm(X.needM)} a month at ${R}, rising with inflation`],['Funded',pct,`${X.status}. ${X.gap>=0?'Surplus '+rm(X.gap):'Short '+rm(-X.gap)}`],['Money lasts until',X.gap>=0?`Age ${L}+`:`Age ${X.lasts}`,X.earliest==null?`Savings never cover the need before ${L}`:`Earliest age to retire: ${X.earliest}`]].forEach(([k,v,sub],i)=>{
-    const x=M+i*(bx+8);rect(x,by,bx,bh,ALU);if(i===2)rect(x,by+bh-3,bx,3,X.status==='On track'?INK:ORG);
-    T(k,x+8,by+bh-16,{s:8.5,c:MUTE});T(v,x+8,by+bh-34,{b:1,s:15});P(sub,x+8,by+bh-47,bx-14,{s:7.5,c:MUTE,lh:9.5});});
+    const x=M+i*(bx+8),sg=i>=2;rect(x,by,bx,bh,ALU);if(i===2)rect(x,by+bh-3,bx,3,SIG);
+    T(k,x+8,by+bh-16,{s:8.5,c:MUTE});
+    if(sg){const vw=fb.widthOfTextAtSize(clean(v),15);rect(x+5,by+bh-39,vw+6,18,SIGBG);line(x+8,by+bh-36.5,x+8+vw,by+bh-36.5,1.2,SIG);}
+    T(v,x+8,by+bh-34,{b:1,s:15,c:sg?SIG:INK});P(sub,x+8,by+bh-47,bx-14,{s:7.5,c:MUTE,lh:9.5});});
   // chart
   const cx=M+44,cw=PW-M-cx,ch=150,top=by-30,cb=top-ch,bw=cw/n,bi=Math.max(.6,bw*.72);
   let mx=1e5;rows.forEach(w=>{mx=Math.max(mx,w.age<=R?Math.max(w.tot,w.need):(w.bal||0));});
@@ -414,7 +420,7 @@ async function makePdf(){
   const iz=rows.findIndex(w=>w.age>R&&w.bal===0);
   if(iz>0)rect(cx+iz*bw,cb,cw-iz*bw,ch,ORG,.09);
   rows.forEach((w,i)=>{const x=cx+i*bw+(bw-bi)/2;
-    if(w.age<=R){const p=Math.min(w.put,w.tot);rect(x,cb,bi,Y(p)-cb,INK);rect(x,Y(p),bi,Y(w.tot)-Y(p),GREY);}
+    if(w.age<=R){const p=Math.min(w.put,w.tot);rect(x,cb,bi,Y(p)-cb,PUT);rect(x,Y(p),bi,Y(w.tot)-Y(p),GREY);}
     else if(w.bal>0)rect(x,cb,bi,Y(w.bal)-cb,ORG);});
   line(cx,cb,cx+cw,cb,1,INK);
   if(rows[0].need>0){for(let i=0;i<N;i++)line(C(i),Y(rows[i].need),C(i+1),Y(rows[i+1].need),1.2,INK,[3,2]);T('Fund needed',C(0),Y(rows[0].need)+6,{b:1,s:8.5});}
@@ -423,14 +429,14 @@ async function makePdf(){
   if(iz>0){const xz=C(iz);pg.drawCircle({x:xz,y:cb,size:2.6,color:ORG});const rt=xz<PW-M-70;T(`Runs out ~${rows[iz].age-1}`,rt?xz+5:PW-M,rt?cb+5:top-10,{b:1,s:8.5,c:ORGT,a:rt?'l':'r'});}
   else{const w=rows[n-1],mb=Math.max(0,...rows.filter(r=>r.age>R).map(r=>r.bal||0));T(`${short(w.bal||0)} left at ${L}`,PW-M,Math.min(top+8,Y(mb)+6),{b:1,s:8.5,a:'r'});}
   rows.forEach((w,i)=>{if(w.age%5===0)T(String(w.age),C(i),cb-12,{s:8,c:MUTE,a:'c'});});T('Age',cx-5,cb-12,{s:8,c:MUTE,a:'r'});
-  let lx=cx;const ly=cb-30;[[INK,'Money put in'],[GREY,'Returns earned'],[ORG,'Savings after retiring']].forEach(([c,t])=>{rect(lx,ly,8,8,c);T(t,lx+12,ly+1,{s:8.5});lx+=f.widthOfTextAtSize(t,8.5)+30;});
+  let lx=cx;const ly=cb-30;[[PUT,'Money put in'],[GREY,'Returns earned'],[ORG,'Savings after retiring']].forEach(([c,t])=>{rect(lx,ly,8,8,c);T(t,lx+12,ly+1,{s:8.5});lx+=f.widthOfTextAtSize(t,8.5)+30;});
   line(lx,ly+4,lx+16,ly+4,1.2,INK,[3,2]);T('Fund needed to retire at that age',lx+21,ly+1,{s:8.5});
   // what to do
-  y=ly-26;T(X.gap<0?'Ways to close the gap':'What the plan allows',M,y,{b:1,s:11});
+  y=ly-28;T(X.gap<0?'Ways to close the gap':'What the plan allows',M,y,{b:1,s:14});
   const er=X.earliest==null?`Not before ${L}`:`Retire at ${X.earliest}`;
-  const W=X.gap<0?[[`${rm(X.extra)} more a month`,`Invest this on top of the plan from now until ${R}`],[er,X.earliest==null?'Savings never catch up with the need':`${X.earliest-R} years later than planned, adding money until then`],[`${rm(X.afford)} a month`,`What the savings can pay in today's RM, instead of ${rm(num('spend'))}`]]
+  const W=X.gap<0?[[`${rm(X.extra)} more a month`,`Invest this on top of the plan from now until ${R}`],[er,X.earliest==null?'Savings never catch up with the need':`${X.earliest-R} years later than planned, adding money until then`],[`Spend only ${rm(X.afford)} a month`,`What the savings can pay in today's RM, instead of ${rm(num('spend'))} desired spending`]]
     :[[er,'The earliest age the savings cover'],[`${rm(X.afford)} a month`,"What the savings can pay in today's RM"],[`${rm(X.gap)} spare`,`Above the fund needed at ${R}`]];
-  const ww=(CW-24)/3;W.forEach(([b,t],i)=>{const x=M+i*(ww+12);T(b,x,y-18,{b:1,s:12});P(t,x,y-31,ww,{s:8.5,c:MUTE,lh:10.5});});
+  const ww=(CW-24)/3;W.forEach(([b,t],i)=>{const x=M+i*(ww+12),z=Math.min(12,ww/fb.widthOfTextAtSize(clean(b),1));T(b,x,y-20,{b:1,s:z});P(t,x,y-33,ww,{s:8.5,c:MUTE,lh:10.5});});
   // inputs and assumptions
   y-=70;const pw=(CW-24)/2,inc=(m,pK,aK)=>S[m]==='Percent'?`${pc(num(pK))} a year`:`${rm(num(aK))} more a month each year`;
   const cols=[['The figures used',[['Monthly salary today',rm(num('sal'))],['Salary increase',inc('sMode','sPct','sAmt')],['Employer pays EPF',S.emp],['EPF savings today',rm(num('epf0'))],['Other savings and investments',rm(num('oth0'))],['Extra investing each month',rm(num('inv'))],['Investing increase',inc('iMode','iPct','iAmt')],["Monthly spending in retirement (today's RM)",rm(num('spend'))],["Other monthly income (today's RM)",rm(num('inc'))]]],
