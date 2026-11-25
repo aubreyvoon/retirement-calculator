@@ -307,13 +307,16 @@ const svg=$('#chart');
 function hovText(){
   if(!RES)return '';
   const {rows,R,L}=RES,i=HOV==null||HOV>=rows.length?RES.N:HOV,w=rows[i];
-  if(w.age<=R)return `Age ${w.age}: savings ${rm(w.tot)}, from ${rm(Math.min(w.put,w.tot))} put in and ${rm(Math.max(0,w.tot-w.put))} returns.`+(w.need>0?` To retire at ${w.age} you would need ${rm(w.need)}.`:'');
+  if(w.age<=R){const p=[`Age ${w.age}: savings ${rm(w.tot)}, from ${rm(Math.min(w.put,w.tot))} put in and ${rm(Math.max(0,w.tot-w.put))} returns.`];
+    if(w.need>0){const ok=w.tot>=w.need,d=Math.abs(w.tot-w.need),s=document.createElement('span');s.className=ok?'pos':'neg';s.textContent=rm(w.need);
+      p.push(` To retire at ${w.age} you would need `,s,ok?`, so your savings cover it with ${rm(d)} to spare.`:`, so you are ${rm(d)} short.`);}
+    return p;}
   if(w.bal>0)return w.age<L?`Age ${w.age}: ${rm(w.bal)} left. Spending at this age is ${rm(w.spendM)} a month after inflation.`:`Age ${w.age}: ${rm(w.bal)} left at the end of your plan.`;
   return `Age ${w.age}: savings used up.`;
 }
 function draw(){
   const W=svg.clientWidth,H=svg.clientHeight;
-  $('#hov').textContent=hovText()+(RES?' Tap or point at the chart to see another age.':'');
+  {const h=$('#hov'),t=hovText();h.textContent='';h.append(...(Array.isArray(t)?t:[t]),RES?' Tap or point at the chart to see another age.':'');}
   if(!RES||!W||!H){G=null;svg.innerHTML=W&&H?`<text class="ax" x="${W/2}" y="${H/2}" text-anchor="middle">Your lifeline appears here.</text>`:'';return;}
   const {rows,N,R,L,gap}=RES,n=rows.length,nar=W<520;
   const m={l:nar?56:60,r:nar?10:16,t:34,b:28},pw=W-m.l-m.r,ph=H-m.t-m.b,bw=pw/n;
