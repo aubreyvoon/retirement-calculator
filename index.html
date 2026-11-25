@@ -21,7 +21,9 @@
    TYPE Geist 700 + Geist
    LAYOUT laptop: title left and the three ages right, finding, figure row, full-width chart, input panels in three columns; phone: stacked, slim result bar while scrolling */
 :root{color-scheme:light dark;--bg:light-dark(#ffffff,#141517);--alu:light-dark(#e9eaec,#1c1e21);--ink:light-dark(#111214,#eceef0);--mute:light-dark(#54585e,#a4a8ae);--line:light-dark(#c6c9ce,#383c42);--panel:light-dark(#f5f6f7,#191b1e);--grey:light-dark(#9ba1a9,#6b7179);--org:light-dark(#ff4f00,#ff6a26);--orgt:light-dark(#b23400,#ff8c55);--yel:light-dark(#fff1a1,#38320f);--yelb:light-dark(#d4b62e,#8a7a22);--grn:light-dark(#1f9a52,#3cc878);--pos:light-dark(#0b6b2e,#86e8a8);--posbg:light-dark(#d2f4dc,#143d24);--neg:light-dark(#b0160b,#ffa197);--negbg:light-dark(#fde0dc,#4d1814)}
-.pos,.neg{font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;padding:0 .2em;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.ul{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;color:var(--ink)}
+.org{color:#111214;background:var(--org)}
+.pos,.neg,.org{font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;padding:0 .2em;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .pos{color:var(--pos);background:var(--posbg)}
 .neg{color:var(--neg);background:var(--negbg)}
 .fg .s .pos,.fg .s .neg{white-space:nowrap;display:inline-block;margin-top:2px}
@@ -307,11 +309,12 @@ const svg=$('#chart');
 function hovText(){
   if(!RES)return '';
   const {rows,R,L}=RES,i=HOV==null||HOV>=rows.length?RES.N:HOV,w=rows[i];
-  if(w.age<=R){const p=[`Age ${w.age}: savings ${rm(w.tot)}, from ${rm(Math.min(w.put,w.tot))} put in and ${rm(Math.max(0,w.tot-w.put))} returns.`];
+  const lab=(t,amt)=>{const u=document.createElement('span'),o=document.createElement('span');u.className='ul';o.className='org';o.textContent=amt;u.append(t,o);return u;};
+  if(w.age<=R){const p=[lab(`Age ${w.age}: savings `,rm(w.tot)),`, from ${rm(Math.min(w.put,w.tot))} put in and ${rm(Math.max(0,w.tot-w.put))} returns.`];
     if(w.need>0){const ok=w.tot>=w.need,d=Math.abs(w.tot-w.need),s=document.createElement('span');s.className=ok?'pos':'neg';s.textContent=rm(w.need);
       p.push(` To retire at ${w.age} you would need `,s,ok?`, so your savings cover it with ${rm(d)} to spare.`:`, so you are ${rm(d)} short.`);}
     return p;}
-  if(w.bal>0)return w.age<L?`Age ${w.age}: ${rm(w.bal)} left. Spending at this age is ${rm(w.spendM)} a month after inflation.`:`Age ${w.age}: ${rm(w.bal)} left at the end of your plan.`;
+  if(w.bal>0)return [lab(`Age ${w.age}: savings `,rm(w.bal)),w.age<L?` left. Spending at this age is ${rm(w.spendM)} a month after inflation.`:' left at the end of your plan.'];
   return `Age ${w.age}: savings used up.`;
 }
 function draw(){
