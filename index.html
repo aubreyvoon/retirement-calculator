@@ -51,8 +51,8 @@ h1{font-size:clamp(30px,4.2vw,44px);line-height:1.05;letter-spacing:-.02em;margi
 .who .f .l{font-size:14px}
 .stp button:disabled{opacity:.3;cursor:not-allowed}
 .stp input[readonly]{cursor:default}
-.recs{margin-top:28px;border:1px solid var(--line);border-radius:12px;padding:4px 18px 14px;background:var(--panel)}
-.recs summary{font-size:18px}
+.recs{margin-top:20px;border:1.5px solid var(--grn);border-radius:12px;padding:16px 18px 14px;background:var(--panel)}
+.recs h2{font-size:18px;margin:0 0 4px;font-weight:600}
 .recrow{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
 .recrow .f{margin:0;flex:1 1 220px;max-width:340px}
 .recrow .btns{margin-top:0}
@@ -194,16 +194,16 @@ tr.r td{background:var(--yel);font-weight:600}
 <main class="band">
 <div class="wrap">
   <div class="grid" id="panels"></div>
-  <details class="recs" id="recs" hidden>
-    <summary>Client records in Google Sheet</summary>
+  <section class="recs" id="recs" hidden>
+    <h2>Save to Google Sheet</h2>
     <p class="h" id="recWhere" style="margin:0 0 12px"></p>
     <div class="recrow">
       <div class="f" id="keyRow" hidden><label class="l" for="recKey">Adviser passcode</label><span class="in"><input id="recKey" type="password" autocomplete="current-password"></span></div>
       <div class="f"><label class="l" for="recSel">Load a saved client</label><span class="in"><select id="recSel"><option value="">Choose a client</option></select></span></div>
-      <div class="btns"><button type="button" class="btn ghost" id="recLoad">Load client</button><button type="button" class="btn ghost" id="recRefresh">Refresh list</button><button type="button" class="btn" id="recSave">Save this client</button></div>
+      <div class="btns"><button type="button" class="btn ghost" id="recLoad">Load client</button><button type="button" class="btn ghost" id="recRefresh">Refresh list</button><button type="button" class="btn" id="recSave">Save to Google Sheet</button></div>
     </div>
     <p class="msg" id="recMsg" aria-live="polite"></p>
-  </details>
+  </section>
   <div class="out">
     <section>
       <h2>Send to your client</h2>
@@ -526,7 +526,7 @@ const recErr=(e,write)=>{const c=e&&e.code;
   if(c==='not_in_manifest'||c==='approval_required'||c==='not_granted')return 'This calculator needs your OK to use Google Sheets. Allow it when claude.ai asks, then try again.';
   if(c==='blocked_by_policy')return 'Your organisation does not allow this calculator to use Google Sheets.';
   if(c==='tool_error')return 'Google Sheets refused the request. Check that you can open the sheet and that it still has the '+TAB+' tab.';
-  if(c==='passcode')return 'That adviser passcode is not right.';
+  if(c==='passcode')return getKey()?"That passcode doesn't match the PASSCODE set in Apps Script (Project Settings, Script Properties).":'Type your adviser passcode first.';
   if(c==='no_tab')return 'The sheet has no tab named '+TAB+'.';
   if(write&&(c==='server_unavailable'||c==='upstream_error'||c==='network'||c==='cancelled'))return 'Google Sheets did not confirm the save. Check the sheet before saving again, so the client is not saved twice.';
   if(c==='server_unavailable'||c==='network')return 'Google Sheets did not respond. Try again in a moment.';
@@ -539,9 +539,9 @@ async function post(o){if(!getKey())throw {code:'passcode'};let r,j=null;try{r=a
     $('#recWhere').textContent='Saves each client as a new row in the '+TAB+' tab of your Google Sheet, using your Google Sheets connection in Claude.';}
   else if(SCRIPT_URL&&!framed){BK={save:row=>post({action:'save',row}),list:async()=>(await post({action:'list'})).rows||[]};
     $('#keyRow').hidden=false;try{$('#recKey').value=sessionStorage.getItem('rcm-key')||'';}catch(e){}
-    $('#recWhere').textContent='For advisers. Enter your passcode to save clients to, or load them from, your Google Sheet.';}
+    $('#recWhere').textContent='For advisers. Type the passcode you set in Apps Script (Project Settings, Script Properties, PASSCODE), then save the client or load a saved one.';}
   $('#recs').hidden=!BK;})();
-$('#recs').addEventListener('toggle',()=>{if($('#recs').open&&!LISTED&&BK&&($('#keyRow').hidden||getKey()))refreshList();});
+$('#recSel').addEventListener('focus',()=>{if(!LISTED&&BK&&($('#keyRow').hidden||getKey()))refreshList();});
 async function refreshList(){if(!BK)return;rmsg('Loading saved clients…');let rows;try{rows=await BK.list();}catch(e){rmsg(recErr(e,false));return;}
   LISTED=true;RECS=new Map();for(const r of rows){const n=String((r&&r[1])||'').trim();if(n)RECS.set(n,r);}
   const sel=$('#recSel'),cur=sel.value;sel.length=1;[...RECS.keys()].sort((a,b)=>a.localeCompare(b)).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.append(o);});
