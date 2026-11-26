@@ -51,8 +51,10 @@ h1{font-size:clamp(30px,4.2vw,44px);line-height:1.05;letter-spacing:-.02em;margi
 .who .f .l{font-size:14px}
 .stp button:disabled{opacity:.3;cursor:not-allowed}
 .stp input[readonly]{cursor:default}
-.recs{margin-top:20px;border:1.5px solid var(--grn);border-radius:12px;padding:16px 18px 14px;background:var(--panel)}
-.recs h2{font-size:18px;margin:0 0 4px;font-weight:600}
+.recs{margin-top:32px;border:1.5px solid var(--grn);border-radius:12px;padding:12px 18px;background:var(--panel)}
+.recs h2{font-size:18px;margin:0;font-weight:600}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.btn.sm{min-height:36px;padding:0 16px;font-size:14px}
 .recrow{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
 .recrow .f{margin:0;flex:1 1 220px;max-width:340px}
 .recrow .btns{margin-top:0}
@@ -195,16 +197,6 @@ tr.r td{background:var(--yel);font-weight:600}
 <main class="band">
 <div class="wrap">
   <div class="grid" id="panels"></div>
-  <section class="recs" id="recs" hidden>
-    <h2>Save to Google Sheet</h2>
-    <p class="h" id="recWhere" style="margin:0 0 12px"></p>
-    <div class="recrow">
-      <div class="f" id="keyRow" hidden><label class="l" for="recKey">Adviser passcode</label><span class="in"><input id="recKey" type="password" autocomplete="current-password"></span></div>
-      <div class="f"><label class="l" for="recSel">Load a saved client</label><span class="in"><select id="recSel"><option value="">Choose a client</option></select></span></div>
-      <div class="btns"><button type="button" class="btn ghost" id="recLoad">Load client</button><button type="button" class="btn ghost" id="recRefresh">Refresh list</button><button type="button" class="btn" id="recSave">Save to Google Sheet</button></div>
-    </div>
-    <p class="msg" id="recMsg" aria-live="polite"></p>
-  </section>
   <div class="out">
     <section>
       <h2>Send to your client</h2>
@@ -231,6 +223,18 @@ tr.r td{background:var(--yel);font-weight:600}
       </ul>
     </section>
   </div>
+  <section class="recs" id="recs" hidden>
+    <div class="rhead"><h2>Save to Google Sheet</h2><button type="button" class="btn ghost sm" id="recToggle" aria-expanded="true" aria-controls="recBody">Hide</button></div>
+    <div id="recBody">
+      <p class="h" id="recWhere" style="margin:6px 0 12px"></p>
+      <div class="recrow">
+        <div class="f" id="keyRow" hidden><label class="l" for="recKey">Adviser passcode</label><span class="in"><input id="recKey" type="password" autocomplete="current-password"></span></div>
+        <div class="f"><label class="l" for="recSel">Load a saved client</label><span class="in"><select id="recSel"><option value="">Choose a client</option></select></span></div>
+        <div class="btns"><button type="button" class="btn ghost" id="recLoad">Load client</button><button type="button" class="btn ghost" id="recRefresh">Refresh list</button><button type="button" class="btn" id="recSave">Save to Google Sheet</button></div>
+      </div>
+      <p class="msg" id="recMsg" aria-live="polite"></p>
+    </div>
+  </section>
   <details>
     <summary>Year-by-year lifeline table</summary>
     <div class="scroll"><table><thead><tr><th>Age</th><th>Salary a month</th><th>Added to EPF</th><th>Extra invested</th><th>Savings if you keep working</th><th>Fund needed to retire at this age</th><th>Savings after you retire</th><th>Spending a month</th></tr></thead><tbody id="tb"></tbody></table></div>
@@ -410,6 +414,7 @@ document.addEventListener('click',e=>{
   else if(b.id==='copy'){const t=$('#sum').value,msg=$('#cmsg'),fail=()=>{const a=$('#sum');a.focus();a.select();msg.textContent='Copy was blocked here. The text is selected, so copy it from the box.';};
     try{navigator.clipboard.writeText(t).then(()=>{msg.textContent='Copied. Paste it into WhatsApp.';},fail);}catch(x){fail();}}
   else if(b.id==='pdf')savePdf();
+  else if(b.id==='recToggle')setRecOpen($('#recBody').hidden,true);
   else if(b.id==='recSave')saveClient();
   else if(b.id==='recRefresh')refreshList();
   else if(b.id==='recLoad')loadClient();
@@ -541,7 +546,9 @@ async function post(o){if(!getKey())throw {code:'passcode'};let r,j=null;try{r=a
   else if(SCRIPT_URL&&!framed){BK={save:row=>post({action:'save',row}),list:async()=>(await post({action:'list'})).rows||[]};
     $('#keyRow').hidden=false;try{$('#recKey').value=sessionStorage.getItem('rcm-key')||'';}catch(e){}
     $('#recWhere').textContent='For advisers. Type the passcode you set in Apps Script (Project Settings, Script Properties, PASSCODE), then save the client or load a saved one.';}
-  $('#recs').hidden=!BK;})();
+  $('#recs').hidden=!BK;let closed=false;try{closed=localStorage.getItem('rcm-rec-hidden')==='1';}catch(e){}setRecOpen(!closed,false);})();
+function setRecOpen(open,remember){$('#recBody').hidden=!open;const t=$('#recToggle');t.textContent=open?'Hide':'Show';t.setAttribute('aria-expanded',String(open));
+  if(remember){try{localStorage.setItem('rcm-rec-hidden',open?'0':'1');}catch(e){}}}
 $('#recSel').addEventListener('focus',()=>{if(!LISTED&&BK&&($('#keyRow').hidden||getKey()))refreshList();});
 async function refreshList(){if(!BK)return;rmsg('Loading saved clients…');let rows;try{rows=await BK.list();}catch(e){rmsg(recErr(e,false));return;}
   LISTED=true;RECS=new Map();for(const r of rows){const n=String((r&&r[1])||'').trim();if(n)RECS.set(n,r);}
